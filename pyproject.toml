@@ -1,0 +1,12 @@
+[project]
+name = "mike-batch"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "asyncio>=3.4.3",
+    "mikeio>=2.6.0",
+    "openpyxl>=3.1.5",
+    "orjson>=3.11.1",
+]
