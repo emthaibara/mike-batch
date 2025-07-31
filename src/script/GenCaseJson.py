@@ -1,5 +1,8 @@
 import itertools
-import json
+import logging
+
+import orjson
+from tqdm import tqdm
 
 def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.json"):
     """
@@ -21,9 +24,15 @@ def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.
     z0_options = [(f"z0-{i + 1}", i + 1) for i in range(z0_count)]
 
     all_combinations = []
+    count = 0
+    total = q1_count * q2_count * q3_count * z0_count
     # 使用 itertools.product 生成所有组合的笛卡尔积
     # combo 会是一个元组，例如 (('q1-1', 1), ('q2-1', 1), ('q3-1', 1), ('z0-1', 1))
-    for combo_parts in itertools.product(q1_options, q2_options, q3_options, z0_options):
+    for combo_parts in tqdm(
+        itertools.product(q1_options, q2_options, q3_options, z0_options),
+        total=total,
+        desc="生成case.json中",
+    ):
         # 提取组合字符串部分和数值部分
         q1_str, q1_val = combo_parts[0]
         q2_str, q2_val = combo_parts[1]
@@ -31,25 +40,27 @@ def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.
         z0_str, z0_val = combo_parts[3]
 
         # 组合成完整的 case_id 字符串
-        case_id_string = f"{q1_str}/{q2_str}/{q3_str}/{z0_str}"
+        case_id_string = f"{z0_str}/{q1_str}/{q2_str}/{q3_str}"
 
         # 构建当前的组合对象
         current_case = {
-            "case_id": case_id_string,
+            "case_id": count,
+            "path":case_id_string,
+            "z0": z0_val,
             "q1": q1_val,
             "q2": q2_val,
             "q3": q3_val,
-            "z0": z0_val
         }
+        count += 1
         all_combinations.append(current_case)
 
     # 将所有组合写入 JSON 文件
     try:
-        with open(output_filename, 'w', encoding='utf-8') as f:
-            json.dump(all_combinations, f, ensure_ascii=False, indent=4)
-        print(f"成功生成 {len(all_combinations)} 种组合，并保存到 '{output_filename}' 文件。")
+        with open(output_filename, 'wb') as f:
+            f.write(orjson.dumps(all_combinations,option=orjson.OPT_INDENT_2))
+            logging.info(f"成功生成 {len(all_combinations)} 种组合，并保存到 '{output_filename}' 文件。")
     except IOError as e:
-        print(f"写入文件时发生错误: {e}")
+        logging.error(f"写入文件时发生错误: {e}")
 
 # 定义每种情况的数量
 q1_cases = 25
