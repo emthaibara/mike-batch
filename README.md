@@ -15,7 +15,7 @@ mikeio + uv + multiprocessing + asyncio + orjson
 2. 层级目录生成（对应case表）
 3. 检查 task表（第一次check则生成task表）,查看status(done,todo,inProgress)
 4. 检查输入文件是否完整
-5. 根据不同case设置输入文件
+5. 根据不同case设置输入文件（重新写入新的dfs0及其设置m21fm）
 6. 批量调用FemEngineHD.exe
 # 项目结构
 

@@ -1,8 +1,12 @@
 import itertools
 import logging
+import os
 
 import orjson
 from tqdm import tqdm
+
+from src.common import work_space_path
+
 
 def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.json"):
     """
@@ -69,4 +73,10 @@ q3_cases = 15
 z0_cases = 15
 
 # 执行函数
-gen_cas_json(q1_cases, q2_cases, q3_cases, z0_cases)
+# 执行函数
+gen_cas_json(
+    q1_cases,
+    q2_cases,
+    q3_cases,
+    z0_cases,
+    os.path.join(work_space_path,'script-generated','cases.json'))

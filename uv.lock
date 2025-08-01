@@ -186,6 +186,7 @@ dependencies = [
     { name = "mikeio" },
     { name = "openpyxl" },
     { name = "orjson" },
+    { name = "pandas" },
 ]
 
 [package.metadata]
@@ -194,6 +195,7 @@ requires-dist = [
     { name = "mikeio", specifier = ">=2.6.0" },
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "orjson", specifier = ">=3.11.1" },
+    { name = "pandas", specifier = ">=2.3.1" },
 ]
 
 [[package]]

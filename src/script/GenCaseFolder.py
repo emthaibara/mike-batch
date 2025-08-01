@@ -45,4 +45,10 @@ def gen_case_folder(json_file_path, base_path, max_workers=8):
     print(f"❌ 出错: {results['error']} 个")
 
 # 示例：最大并发数16
-gen_case_folder("cases.json", os.path.join(work_space_path, 'mike-simulation','all_case'), max_workers=16)
+gen_case_folder(
+    #工况集Json文件路径
+    os.path.join(work_space_path,'script-generated','cases.json'),
+    #待模拟的所有工况顶层文件夹路径
+    os.path.join(work_space_path,'script-generated','mike-simulation','all_case'),
+    max_workers=16)
+
