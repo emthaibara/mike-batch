@@ -6,5 +6,6 @@ dist/
 wheels/
 *.egg-info
 mike-simulation
+script-generated/*
 # Virtual environments
 .venv
