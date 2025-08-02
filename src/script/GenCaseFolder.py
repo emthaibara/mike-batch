@@ -2,7 +2,8 @@ import os
 import orjson
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
-from src.common import work_space_path
+from src.common import script_generated_path
+
 
 def create_one_case(case, base_path):
     full_path = os.path.join(base_path, case["path"])
@@ -47,8 +48,8 @@ def gen_case_folder(json_file_path, base_path, max_workers=8):
 # 示例：最大并发数16
 gen_case_folder(
     #工况集Json文件路径
-    os.path.join(work_space_path,'script-generated','cases.json'),
+    os.path.join(script_generated_path,'cases.json'),
     #待模拟的所有工况顶层文件夹路径
-    os.path.join(work_space_path,'script-generated','mike-simulation','all_case'),
+    os.path.join(script_generated_path,'mike-simulation','all_case'),
     max_workers=16)
 

@@ -7,6 +7,6 @@ wheels/
 *.egg-info
 mike-simulation
 script-generated/*
-# Virtual environments
 .venv
 /assets/test/
+/assets/script-generated/

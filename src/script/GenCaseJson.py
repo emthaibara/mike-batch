@@ -5,7 +5,7 @@ import os
 import orjson
 from tqdm import tqdm
 
-from src.common import work_space_path
+from src.common import script_generated_path
 
 
 def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.json"):
@@ -61,7 +61,7 @@ def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.
     # 将所有组合写入 JSON 文件
     try:
         with open(output_filename, 'wb') as f:
-            f.write(orjson.dumps(all_combinations,option=orjson.OPT_INDENT_2))
+            f.write(orjson.dumps(all_combinations))
             logging.info(f"成功生成 {len(all_combinations)} 种组合，并保存到 '{output_filename}' 文件。")
     except IOError as e:
         logging.error(f"写入文件时发生错误: {e}")
@@ -73,10 +73,9 @@ q3_cases = 15
 z0_cases = 15
 
 # 执行函数
-# 执行函数
 gen_cas_json(
     q1_cases,
     q2_cases,
     q3_cases,
     z0_cases,
-    os.path.join(work_space_path,'script-generated','cases.json'))
+    os.path.join(script_generated_path,'cases.json'))
