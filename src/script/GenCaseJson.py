@@ -8,7 +8,7 @@ from tqdm import tqdm
 from src.common import script_generated_path
 
 
-def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.json"):
+def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename=os.path.join(script_generated_path,'cases.json')):
     """
     生成 q1, q2, q3, z0 的所有组合，并将其保存为 JSON 文件。
     每个组合除了包含完整的 case_id 字符串，还会包含 q1, q2, q3, z0 的单独数值。
@@ -61,12 +61,13 @@ def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.
     # 将所有组合写入 JSON 文件
     try:
         with open(output_filename, 'wb') as f:
-            f.write(orjson.dumps(all_combinations))
-            logging.info(f"成功生成 {len(all_combinations)} 种组合，并保存到 '{output_filename}' 文件。")
+            f.write(orjson.dumps(all_combinations)) # 紧凑型
+            # f.write(orjson.dumps(all_combinations,option=orjson.OPT_INDENT_2)) 格式化输出 ：）
+            print(f"成功生成 {len(all_combinations)} 种组合，并保存到 '{output_filename}' 文件。")
     except IOError as e:
-        logging.error(f"写入文件时发生错误: {e}")
+        print(f"写入文件时发生错误: {e}")
 
-# 定义每种情况的数量
+# 定义每种情况的数量  25x15x15x15 = 84374
 q1_cases = 25
 q2_cases = 15
 q3_cases = 15
@@ -77,5 +78,4 @@ gen_cas_json(
     q1_cases,
     q2_cases,
     q3_cases,
-    z0_cases,
-    os.path.join(script_generated_path,'cases.json'))
+    z0_cases,)
