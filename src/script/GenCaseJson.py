@@ -27,7 +27,7 @@ def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.
     q3_options = [(f"q3-{i + 1}", i + 1) for i in range(q3_count)]
     z0_options = [(f"z0-{i + 1}", i + 1) for i in range(z0_count)]
 
-    all_combinations = []
+    all_combinations = {'cases': []}
     count = 0
     total = q1_count * q2_count * q3_count * z0_count
     # 使用 itertools.product 生成所有组合的笛卡尔积
@@ -56,7 +56,7 @@ def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename="cases.
             "q3": q3_val,
         }
         count += 1
-        all_combinations.append(current_case)
+        all_combinations['cases'].append(current_case)
 
     # 将所有组合写入 JSON 文件
     try:

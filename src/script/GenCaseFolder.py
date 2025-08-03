@@ -20,7 +20,7 @@ def create_one_case(case, base_path):
 def gen_case_folder(json_file_path, base_path, max_workers=8):
     try:
         with open(json_file_path, 'rb') as f:
-            cases = orjson.loads(f.read())
+            data = orjson.loads(f.read())
     except Exception as e:
         print(f"读取 JSON 文件出错: {e}")
         return
@@ -28,7 +28,7 @@ def gen_case_folder(json_file_path, base_path, max_workers=8):
     results = {"created": 0, "skipped": 0, "error": 0}
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
-        for case in cases:
+        for case in data['cases']:
             futures.append(executor.submit(create_one_case, case, base_path))
 
         for f in tqdm(as_completed(futures), total=len(futures), desc="并发创建中"):
@@ -50,6 +50,6 @@ gen_case_folder(
     #工况集Json文件路径
     os.path.join(script_generated_path,'cases.json'),
     #待模拟的所有工况顶层文件夹路径
-    os.path.join(script_generated_path,'mike-simulation','all_case'),
+    os.path.join(script_generated_path,'simulation','all_case'),
     max_workers=16)
 

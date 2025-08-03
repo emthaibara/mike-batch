@@ -9,4 +9,4 @@ mike-simulation
 script-generated/*
 .venv
 /assets/test/
-/assets/script-generated/
+/assets/generated/
