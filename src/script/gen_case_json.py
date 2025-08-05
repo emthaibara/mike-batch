@@ -48,12 +48,13 @@ def gen_cas_json(q1_count, q2_count, q3_count, z0_count, output_filename=os.path
 
         # 构建当前的组合对象
         current_case = {
-            "case_id": count,
-            "path":case_id_string,
-            "z0": z0_val,
-            "q1": q1_val,
-            "q2": q2_val,
-            "q3": q3_val,
+            'case_id': count,
+            'path':case_id_string,
+            'z0': z0_val,
+            'q1': q1_val,
+            'q2': q2_val,
+            'q3': q3_val,
+            'duration': 28800  # TODO： 8h = 8x 3600 = 28800s  后续要根据实际case生成
         }
         count += 1
         all_combinations['cases'].append(current_case)
