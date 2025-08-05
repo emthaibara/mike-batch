@@ -1,7 +1,6 @@
 from joblib import Parallel, delayed
 
 from src.aspect.start_simulation_aspect import load_and_persistence
-from src.aspect.worker_aspect import update_task_status
 from src.tools.tasks_tool import *
 
 @load_and_persistence
@@ -10,23 +9,54 @@ def start_simulation(cases=None, pending_tasks=None):
     cpu_core_count = os.cpu_count()
     try:
         Parallel(n_jobs=cpu_core_count, backend="loky")(
-            delayed(__worker)(task_id,cases)
+            delayed(worker)(task_id,cases)
             for task_id in tqdm(pending_tasks, desc="发起水动力模型模拟任务")
         )
-    except BaseException as e:
+    except KeyboardInterrupt as e:
+        print('\n意外退出，正在保存任务进度......')
         persistence()
+        print('任务进度保存成功',end='False')
         print(e)
+    finally:
+        pass
 
-# TODO: 调用水动力模型模拟引擎,并更新任务状态, 根据不同的任务设置不同的 dfs0 + m21fm   (具体修改哪些内容还不太明确)
-@update_task_status
-def __worker(task_id,cases):
+def worker(task_id, cases):
+    __rd = redis.Redis(host='localhost', port=6379, decode_responses=True)
+    # 更改状态为任务进行中⛔️
+    __rd.hset(KEY, str(task_id), str(StatusEnum.in_process.value))
+
+    # simulation
+    work(cases[task_id])
+
+    # 更改状态为已完成✅
+    __rd.hset(KEY, str(task_id), str(StatusEnum.completed.value))
+
+def work(case):
+    case_path = case['path']
+    q1 = case['q1']
+    q2 = case['q2']
+    q3 = case['q3']
+    z0 = case['z0']
+    duration = case['duration']
 
     pass
 
+def work_test():
 
+    case = {
+        'path': './cases/case1.json',
+        'q1': 2,
+        'q2': 1,
+        'q3': 1,
+        'z0': 1,
+        'duration': 1,
+    }
 
 if __name__ == '__main__':
-    __worker(
-        2131,
-        {}
-    )
+    pass
+    # r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+    # if os.path.exists(r'/Users/lemt/PycharmProjects/mike-batch/assets/generated/tasks.json'):
+    #     os.remove(r'/Users/lemt/PycharmProjects/mike-batch/assets/generated/tasks.json')
+    # if r.exists(KEY):
+    #     r.delete(KEY)
+    # start_simulation([],[])

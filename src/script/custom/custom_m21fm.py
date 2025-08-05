@@ -1,17 +1,16 @@
 import os.path
 from src.common import assets_path
 
-m21fm_path = os.path.join(assets_path, 'test', 'LHKHX.m21fm')
+m21fm_path = os.path.join(assets_path, 'required', 'LHKHX.m21fm')
 format_m21fm_path = os.path.join(assets_path, 'test', 'Script-gen-LHKHX.m21fm')
 # 格式化m21fm：去掉所有空行，紧凑布局
 def format_m21fm():
     with open(m21fm_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
     new_section = [line for line in lines if line.strip() != '']
-    with open(format_m21fm_path, 'w', encoding='utf-8') as f:
+    with open(m21fm_path, 'w', encoding='utf-8') as f:
         f.writelines(new_section)
-
-# format_m21fm()
+format_m21fm()
 
 Scripts_set_m21fm_path = os.path.join(assets_path, 'test', 'Script-set-gen-LHKHX.m21fm')
 # 逐行读取并原地修改再写入新文件

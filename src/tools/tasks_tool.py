@@ -26,7 +26,7 @@ def __load_tasks():
 def __gen_tasks_json():
     global __tasks
     with open(__tasks_json_path,'wb') as f:
-        __tasks[:] = [{'tasks_id':i,'task_status': StatusEnum.not_started}
+        __tasks[:] = [{'task_id':i,'task_status': StatusEnum.not_started}
                       for i in tqdm(range(__task_total),
                                     desc='tasks.json not exist, generating tasks json')]
         f.write(orjson.dumps({KEY:__tasks}))
@@ -41,10 +41,7 @@ def persistence():
     cached_tasks = __rd.hgetall(KEY)
     tasks_json = {KEY:[]}
     for task in cached_tasks.items():
-        task_id = int(task[0])
-        task_status = int(task[1])
-        tasks_json[KEY].append({'task_id': task_id, 'task_status': task_status})
-        print(f'task_id={task_id}, task_status={task_status}')
+        tasks_json[KEY].append({'task_id': int(task[0]), 'task_status': int(task[1])})
     with open(__tasks_json_path,'wb') as f:
         f.write(orjson.dumps(tasks_json))
 
@@ -63,7 +60,7 @@ def __check():
     else:
         __load_cases()
 
-    # check tasks and load （首次检查，要检查cache和json两个位置）
+    # check tasks and load （要检查cache和json两个位置）
     if not os.path.exists(__tasks_json_path):
         __check_tasks_cache()
         __gen_tasks_json()
