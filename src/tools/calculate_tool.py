@@ -1,10 +1,10 @@
 import math
 from functools import lru_cache
-
 import pandas as pd
-
 from src.common import q1_cases_path, q2_cases_path, q3_cases_path, z0_cases_path, v0_cases_path
 
+
+# 为了代码的统一性，这里不对原先代码做变动，设置一个转换表 （z key <----> v的序号）
 __key_to_num_dict = {
     'z0-1': 15,
     'z0-2': 14,
@@ -40,32 +40,49 @@ __num_to_key_dict = {
     1 : 'z0-15'
 }
 
-def __do_calculate(q1 : float, q2 : float, q3 : float, z0_key : str)->float:
+def __do_calculate(q1 : float,
+                   q2 : float,
+                   q3 : float,
+                   z0_key : str) -> float:
+    # 初始水位序号
     initial_water_level_num = __key_to_num_dict[z0_key] #15
+    # 初始库容dq
     v0 = get_v0_cases().loc[z0_key].iloc[0] #4881
+    # 净流量v0
     dq = q1 + q2 - q3 #-300
+
+    # 如果等于0，为了代码的统一性，我这里设置成无穷大，因为后面的算式他会做被除数
     if dq == 0:
         dq = float('inf')
+
+    # 最大目标库容v1
     if dq < 0:
         v1 = get_v0_cases().loc['z0-15'].iloc[0]
     else:
         v1 = get_v0_cases().loc['z0-1'].iloc[0]
 
+    # 最长所需时间t1
     max_time_required_t1 = (v0 - v1) / (-dq) / 0.36
 
+    # 限制后最短时间t1
     if q2 < 0:
         max_time_after_limit_t1 = min(max_time_required_t1,10)
     else:
         max_time_after_limit_t1 = min(max_time_required_t1,7)
 
+    # 最短目标水位序号
     if max_time_required_t1 < 0:
         shortest_target_water_level_num = min(15,initial_water_level_num + 1)
     else:
         shortest_target_water_level_num = max(1,initial_water_level_num - 1)
 
+    # 最短目标水位序号对应的初始库容值
     shortest_target_water_level_key = __num_to_key_dict[shortest_target_water_level_num]
+    # 最短目标库容v2
     v2 = get_v0_cases().loc[shortest_target_water_level_key].iloc[0]
+    # 最短所需时间t2
     max_time_required_t2 = (v1 - v2) / (-dq) / 0.36
+    # 限制后最短时间t2
     min_time_after_limit_t2 = min(max_time_required_t2,5)
 
     # 计算时长 = 插值系数 * 计算时常

@@ -6,23 +6,6 @@ import pandas as pd
 from mikeio import Dfs0, ItemInfo, EUMType, EUMUnit
 from src.common import assets_path
 
-
-dfs0_path = os.path.join(assets_path, 'test', 'Qout_LHK_mikeio_write.dfs0')
-def r_dfs0():
-    dfs = Dfs0(dfs0_path)
-    # 读取所有数据并只保留整数
-    data = dfs.read().to_dataframe().astype(int)
-    # 起始时间
-    print('起始时间:', dfs.start_time)
-    # 时间间隔(整数输出)
-    interval = dfs.to_dataframe().index[1] - dfs.to_dataframe().index[0]
-    print('时间间隔:', int(interval.total_seconds()), 's')
-    # 每一行的值
-    print('data:', data.values)
-    # 列名
-    print(dfs.items[0].name)
-
-
 def w_dfs0(n: int,  # 数据量（数据的行数）
            start_time: str,  # 起始时间
            time_step_seconds: int,  # 时间间隔

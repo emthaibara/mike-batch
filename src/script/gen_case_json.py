@@ -5,23 +5,23 @@ from tqdm import tqdm
 from src.common import script_generated_path
 from src.tools import calculate_duration
 
-def gen_cas_json(q1_count,
-                 q2_count,
-                 q3_count,
-                 z0_count,
+def gen_cas_json(z0_cases_count,
+                 q1_cases_count,
+                 q2_cases_count,
+                 q3_cases_count,
                  output_path=os.path.join(script_generated_path,'cases.json')):
 
     # 生成每个情况的所有可能值及其对应的数值
-    q1_options = [(f"q1-{i + 1}", i + 1) for i in range(q1_count)]
-    q2_options = [(f"q2-{i + 1}", i + 1) for i in range(q2_count)]
-    q3_options = [(f"q3-{i + 1}", i + 1) for i in range(q3_count)]
-    z0_options = [(f"z0-{i + 1}", i + 1) for i in range(z0_count)]
+    q1_options = [(f"q1-{i + 1}", i + 1) for i in range(q1_cases_count)]
+    q2_options = [(f"q2-{i + 1}", i + 1) for i in range(q2_cases_count)]
+    q3_options = [(f"q3-{i + 1}", i + 1) for i in range(q3_cases_count)]
+    z0_options = [(f"z0-{i + 1}", i + 1) for i in range(z0_cases_count)]
 
     # 所有组合，最后写入json文件
     all_combinations = {'cases': []}
     # 计数
     count = 0
-    total = q1_count * q2_count * q3_count * z0_count
+    total = q1_cases_count * q2_cases_count * q3_cases_count * z0_cases_count
     # 使用 itertools.product 生成所有组合的笛卡尔积
     # combo 会是一个元组，例如 (('q1-1', 1), ('q2-1', 1), ('q3-1', 1), ('z0-1', 1))
     for combo_parts in tqdm(
@@ -58,7 +58,7 @@ def gen_cas_json(q1_count,
     try:
         with open(output_path, 'wb') as f:
             f.write(orjson.dumps(all_combinations,option=orjson.OPT_INDENT_2)) # 紧凑型
-            print(f"成功生成 {len(all_combinations['cases'])} 种组合，并保存到 '{output_path}' 文件")
+            tqdm.write(f"成功生成 {len(all_combinations['cases'])} 种组合，并保存到 '{output_path}' 文件")
     except IOError as e:
         print(f"写入文件时发生错误: {e}")
 

@@ -29,7 +29,7 @@ def __gen_tasks_json():
         __tasks[:] = [{'task_id':i,'task_status': StatusEnum.not_started}
                       for i in tqdm(range(__task_total),
                                     desc='tasks.json not exist, generating tasks json')]
-        f.write(orjson.dumps({KEY:__tasks}))
+        f.write(orjson.dumps({KEY:__tasks},option=orjson.OPT_INDENT_2))
 
 # 填充 cases、tasks
 def fill(args):
@@ -37,19 +37,23 @@ def fill(args):
     args[0] = __cases
     args[1] = __filter_tasks()
 
-def persistence():
+def persistence(is_return=False):
     cached_tasks = __rd.hgetall(KEY)
-    tasks_json = {KEY:[]}
-    for task in cached_tasks.items():
-        tasks_json[KEY].append({'task_id': int(task[0]), 'task_status': int(task[1])})
-    with open(__tasks_json_path,'wb') as f:
-        f.write(orjson.dumps(tasks_json))
+    if is_return:
+        return cached_tasks
+    else:
+        tasks_json = {KEY:[]}
+        for task in cached_tasks.items():
+            tasks_json[KEY].append({'task_id': int(task[0]), 'task_status': int(task[1])})
+        with open(__tasks_json_path,'wb') as f:
+            f.write(orjson.dumps(tasks_json))
+            return None
 
 # 任务筛选，如果该任务状态未完成则
 def __filter_tasks():
     pending_tasks = []
     for task in __tasks:
-        if task['task_status'] != StatusEnum.completed:
+        if task['task_status'] != StatusEnum.completed.value:
             pending_tasks.append(task['task_id'])
     return pending_tasks
 

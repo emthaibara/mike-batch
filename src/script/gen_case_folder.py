@@ -2,10 +2,9 @@ import os
 import orjson
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
-from src.common import script_generated_path
 
 
-def create_one_case(case, base_path):
+def __create_one_case(case, base_path):
     full_path = os.path.join(base_path, case["path"])
 
     if os.path.isdir(full_path):
@@ -29,7 +28,7 @@ def gen_case_folder(json_file_path, base_path, max_workers=8):
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         for case in data['cases']:
-            futures.append(executor.submit(create_one_case, case, base_path))
+            futures.append(executor.submit(__create_one_case, case, base_path))
 
         for f in tqdm(as_completed(futures), total=len(futures), desc="并发创建中"):
             result = f.result()
@@ -41,15 +40,6 @@ def gen_case_folder(json_file_path, base_path, max_workers=8):
                 results["error"] += 1
                 print(f"⚠️ 错误: {result}")
 
-    print(f"✅ 创建成功: {results['created']} 个")
-    print(f"⏭️ 已存在跳过: {results['skipped']} 个")
-    print(f"❌ 出错: {results['error']} 个")
-
-# 示例：最大并发数16
-gen_case_folder(
-    #工况集Json文件路径
-    os.path.join(script_generated_path,'cases.json'),
-    #待模拟的所有工况顶层文件夹路径
-    os.path.join(script_generated_path,'simulation','all_case'),
-    max_workers=16)
-
+    tqdm.write(f"✅ 创建成功: {results['created']} 个")
+    tqdm.write(f"⏭️ 已存在跳过: {results['skipped']} 个")
+    tqdm.write(f"❌ 出错: {results['error']} 个")
