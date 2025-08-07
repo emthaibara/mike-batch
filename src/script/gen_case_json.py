@@ -1,9 +1,12 @@
 import itertools
 import os
 import orjson
+from colorama import Fore
 from tqdm import tqdm
-from src.common import script_generated_path
-from src.tools import calculate_duration
+from src.common import script_generated_path, pump_cases_json_path, generate_electricity_cases_json_path, \
+    do_nothing_cases_json_path
+from src.tools import calculate_duration, get_q2_cases
+
 
 def gen_cas_json(z0_cases_count,
                  q1_cases_count,
@@ -19,13 +22,16 @@ def gen_cas_json(z0_cases_count,
 
     # 所有组合，最后写入json文件
     all_combinations = {'cases': []}
+    pump_combinations = {'cases': []}
+    gen_electricity_combinations = {'cases': []}
+    do_nothing_combinations = {'cases': []}
     # 计数
     count = 0
     total = q1_cases_count * q2_cases_count * q3_cases_count * z0_cases_count
     # 使用 itertools.product 生成所有组合的笛卡尔积
     # combo 会是一个元组，例如 (('q1-1', 1), ('q2-1', 1), ('q3-1', 1), ('z0-1', 1))
-    for combo_parts in tqdm(
-        itertools.product(q1_options, q2_options, q3_options, z0_options),
+    for index,combo_parts in tqdm(
+        enumerate(itertools.product(q1_options, q2_options, q3_options, z0_options)),
         total=total,
         desc="生成case.json中",
     ):
@@ -41,9 +47,10 @@ def gen_cas_json(z0_cases_count,
         duration = calculate_duration(q1_str, q2_str, q3_str,z0_str)
         if duration <= 0:
             continue
+
         # 构建当前的组合对象
         current_case = {
-            'case_id': count,
+            'case_id': index,
             'path':case_id_string,
             'z0': z0_str,
             'q1': q1_str,
@@ -51,14 +58,34 @@ def gen_cas_json(z0_cases_count,
             'q3': q3_str,
             'duration': duration
         }
-        count += 1
+
         all_combinations['cases'].append(current_case)
+        q2 = float(get_q2_cases().loc[q2_str].iloc[0])
+        if q2 < 0:
+            pump_combinations['cases'].append(current_case)
+        elif q2 > 0:
+            gen_electricity_combinations['cases'].append(current_case)
+        elif q2 == 0:
+            do_nothing_combinations['cases'].append(current_case)
 
     # 将所有组合写入 JSON 文件
     try:
+
         with open(output_path, 'wb') as f:
             f.write(orjson.dumps(all_combinations,option=orjson.OPT_INDENT_2)) # 紧凑型
-            tqdm.write(f"成功生成 {len(all_combinations['cases'])} 种组合，并保存到 '{output_path}' 文件")
+            tqdm.write(f"{Fore.GREEN}成功生成所有组合,共计{total}种，筛选出有效工况共计{len(all_combinations['cases'])} 种组合，并保存到 '{output_path}' 文件")
+        with open(generate_electricity_cases_json_path, 'wb') as f:
+            f.write(orjson.dumps(gen_electricity_combinations, option=orjson.OPT_INDENT_2))  # 紧凑型
+            tqdm.write(f"{Fore.GREEN}成功筛选出有效[发电]工况，共计{len(gen_electricity_combinations['cases'])} 种组合，并保存到 '{generate_electricity_cases_json_path}' 文件")
+
+        with open(pump_cases_json_path, 'wb') as f:
+            f.write(orjson.dumps(pump_combinations, option=orjson.OPT_INDENT_2))  # 紧凑型
+            tqdm.write(f"{Fore.GREEN}成功筛选出有效[抽水]工况，共计 {len(pump_combinations['cases'])} 种组合，并保存到 '{pump_cases_json_path}' 文件")
+
+        with open(do_nothing_cases_json_path, 'wb') as f:
+            f.write(orjson.dumps(do_nothing_combinations, option=orjson.OPT_INDENT_2))  # 紧凑型
+            tqdm.write(f"{Fore.GREEN}成功筛选出有效[不抽不发]工况，共计 {len(do_nothing_combinations['cases'])} 种组合，并保存到 '{do_nothing_cases_json_path}' 文件")
+
     except IOError as e:
         print(f"写入文件时发生错误: {e}")
 

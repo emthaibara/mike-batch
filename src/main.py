@@ -1,11 +1,6 @@
 import argparse
 import sys
-import threading
-
-from src.common import cases_json_path, simulation_path
-from src.script import gen_cas_json, start_timing_job
-from src.script.gen_case_folder import gen_case_folder
-from src.script.simulation import start_simulation
+from src.script import gen_cas_json
 
 """ 定义参数解析函数 """
 def __check_parse_args():
@@ -25,21 +20,21 @@ def __check_parse_args():
 def main():
     """ 启动前入参检查 """
     args = __check_parse_args()
-    # script_output_path = args.script_output_path
     z0_cases_count = args.z0_cases_count
     q1_cases_count = args.q1_cases_count
     q2_cases_count = args.q2_cases_count
     q3_cases_count = args.q3_cases_count
     """ 生成工况组合并根据计算时常筛选出有效工况 """
     gen_cas_json(z0_cases_count, q1_cases_count, q2_cases_count, q3_cases_count)
-    """" 根据工况表批量生成工况目录 """
-    gen_case_folder(cases_json_path,simulation_path,max_workers=12)
-    """" 定时同步所有任务状态（每隔10s写入一次tasks.json） """
-    stop_event = threading.Event()
-    thread = threading.Thread(target=start_timing_job,args=(stop_event,))
-    thread.start()
-    """ 开始批量模拟（内容填充前置处理AOP独立出去了，这里传入空列表就行） """
-    start_simulation([],[],stop_event=stop_event)
+    # """" 根据工况表批量生成工况目录 """
+    # gen_case_folder(cases_json_path,simulation_path,max_workers=12)
+
+    # """" 定时同步所有任务状态（每隔10s写入一次tasks.json） """
+    # stop_event = threading.Event()
+    # thread = threading.Thread(target=start_timing_job,args=(stop_event,))
+    # thread.start()
+    # """ 开始批量模拟（内容填充前置处理AOP独立出去了，这里传入空列表就行） """
+    # start_simulation([],[],stop_event=stop_event)
 
 if __name__ == '__main__':
     main()
