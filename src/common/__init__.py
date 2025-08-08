@@ -1,7 +1,6 @@
 from .path import *
 from .file_name import *
 from .case_type import *
-from .picologging_config import setup_logging
 __all__ = ['assets_path',
            'work_space_path',
            'script_generated_path',
@@ -19,5 +18,4 @@ __all__ = ['assets_path',
            'generate_electricity',
            'pump',
            'do_nothing',
-           'logs_path',
-           'setup_logging']
+           'logs_path',]

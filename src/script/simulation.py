@@ -6,7 +6,7 @@ from apscheduler.jobstores import redis
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
-from src.aspect.start_simulation_aspect import load_and_persistence
+from src.aspect.simulation_aspect import load_and_persistence
 from src.common import simulation_path
 from src.enums import StatusEnum
 from src.script import q1_key, q2_key, q3_key

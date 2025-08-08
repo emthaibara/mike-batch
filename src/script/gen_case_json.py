@@ -3,9 +3,11 @@ import os
 
 import orjson
 import pandas as pd
+import picologging
 from colorama import Fore
 from tqdm import tqdm
 
+from src.aspect import log_name
 from src.common import required_path, q1_cases_file_name, q2_cases_file_name, q3_cases_file_name, do_nothing, \
     generate_electricity, pump, script_generated_path
 from src.tools import get_z0_cases, KEY
@@ -16,7 +18,7 @@ __type = {
     pump : '抽水',
     do_nothing : '不抽不发'
 }
-
+__logger = picologging.getLogger(log_name)
 z0_key = f'elevation'
 q1_key = f'q1-flow_rate'
 q2_key = f'q2-flow_rate'
@@ -46,19 +48,16 @@ def __filter_case(case_type : str,q2_offset,count_offset):
     z0_options = [(f"z0-{i + 1}", i + 1) for i in range(z0_total)]
     # json
     combinations = {f'{case_type}_cases':[]}
-    # 总计
-    total = q1_total * q2_total * q3_total * z0_total
     count = 0
-    for cases_id,combo in tqdm(
-        enumerate(itertools.product(q1_options, q2_options, q3_options, z0_options)),
-        total=total,
-        desc=f"正在筛选所有[{__type[case_type]}]工况中",
-    ):
+    for cases_id,combo in enumerate(itertools.product(q1_options, q2_options, q3_options, z0_options)):
+
         z0_value = z0_cases.loc[combo[3][0]].iloc[0]
         q1_value = q1_cases.loc[combo[0][0]].iloc[0]
         q2_value = q2_cases.loc[combo[1][0]].iloc[0]
         q3_value = q3_cases.loc[combo[2][0]].iloc[0]
 
+        __logger.info("=======================================================================")
+        __logger.info(f'{__type[case_type]}工况={combo[3][0]}/{combo[0][0]}/{combo[1][0]}/{combo[2][0]} 正在计算时长...')
         duration = calculate_duration(combo[3][0],q1_value,q2_value,q3_value)
         if duration <= 0:
             continue
@@ -90,17 +89,18 @@ def gen_cases_json():
     __generate_electricity_cases = __filter_case(generate_electricity, 14, __do_nothing_cases.__len__())
     __pump_cases = __filter_case(pump, 1, __do_nothing_cases.__len__()+__generate_electricity_cases.__len__())
 
-    print( f"{Fore.GREEN}成功筛选有效[{f'{do_nothing}_cases'}]工况共{__do_nothing_cases.__len__()}种")
-    print(f"{Fore.GREEN}成功筛选有效[{f'{generate_electricity}_cases'}]工况共{__generate_electricity_cases.__len__()}种")
-    print(f"{Fore.GREEN}成功筛选有效[{f'{pump}_cases'}]工况共{__pump_cases.__len__()}种")
+    __logger.info( f"成功筛选有效[{f'{do_nothing}_cases'}]工况共{__do_nothing_cases.__len__()}种")
+    __logger.info(f"成功筛选有效[{f'{generate_electricity}_cases'}]工况共{__generate_electricity_cases.__len__()}种")
+    __logger.info(f"成功筛选有效[{f'{pump}_cases'}]工况共{__pump_cases.__len__()}种")
 
     __cases.extend(__do_nothing_cases)
     __cases.extend(__generate_electricity_cases)
     __cases.extend(__pump_cases)
-    print(f"{Fore.GREEN}总的有效工况共{__cases.__len__()}种")
-    __cases_json = [KEY, __cases]
+    __logger.info(f"总的有效工况共{__cases.__len__()}种")
+    __cases_json = {'cases' :  __cases}
     try:
         with open(os.path.join(script_generated_path, 'cases.json'), 'wb') as f:
             f.write(orjson.dumps(__cases_json, option=orjson.OPT_INDENT_2))
+        __logger.info("=======================================================================")
     except IOError as e:
-        print(f"写入文件时发生错误: {e}")
+        __logger.error(f"写入文件时发生错误: {e}")

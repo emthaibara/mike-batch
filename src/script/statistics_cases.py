@@ -8,7 +8,10 @@ from matplotlib import pyplot as plt
 from src.common import pump_cases_json_path, generate_electricity_cases_json_path, do_nothing_cases_json_path, \
     script_generated_path
 
-def __statistics_cases():
+__chat_path = os.path.join(script_generated_path,'chart')
+if not os.path.exists(__chat_path):
+    os.makedirs(__chat_path)
+def statistics_cases():
     __pump_cases = orjson.loads(open(pump_cases_json_path, 'rb').read())['pump_cases']
     __generate_electricity_cases = orjson.loads(open(generate_electricity_cases_json_path, 'rb').read())['gen_cases']
     __do_nothing_cases = orjson.loads(open(do_nothing_cases_json_path, 'rb').read())['do_nothing_cases']
@@ -33,7 +36,7 @@ def __draw_duration_distribution(cases_pd : pd.DataFrame,cases_type : str,bin_wi
     plt.title(f'[{cases_type}] Case Duration Distribution (0.5h bins)')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
-    plt.savefig(os.path.join(script_generated_path,'chart',f'{cases_type}.png'), dpi=600)
+
+    plt.savefig(os.path.join(__chat_path,f'{cases_type}.png'), dpi=600)
     plt.show()
 
-__statistics_cases()
