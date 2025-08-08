@@ -1,7 +1,7 @@
 import os
 
-import orjson
 import redis
+from orjson import orjson
 from tqdm import tqdm
 from src.common import script_generated_path
 from src.enums import StatusEnum

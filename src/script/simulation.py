@@ -1,9 +1,17 @@
+import os
+import subprocess
 import threading
 
+from apscheduler.jobstores import redis
 from joblib import Parallel, delayed
+from tqdm import tqdm
 
 from src.aspect.start_simulation_aspect import load_and_persistence
-from src.tools.tasks_tool import *
+from src.common import simulation_path
+from src.enums import StatusEnum
+from src.script import q1_key, q2_key, q3_key
+from src.script.custom import gen_m21fm,gen_dfs0
+from src.tools import persistence, KEY
 
 
 @load_and_persistence
@@ -34,9 +42,23 @@ def worker(task_id, cases):
     __rd.hset(KEY, str(task_id), str(StatusEnum.completed.value))
 
 def work(case):
-    case_path = case['path']
-    q1 = case['q1']
-    q2 = case['q2']
-    q3 = case['q3']
-    z0 = case['z0']
-    duration = case['duration']
+    path = case['path']
+    location = os.path.join(simulation_path, path)
+    elevation = case['elevation']
+    q1_flow_rate = case[q1_key]
+    q2_flow_rate = case[q2_key]
+    q3_flow_rate = case[q3_key]
+    number_of_time_steps = case['number_of_time_steps']
+    # 定制 dfs0
+    gen_dfs0(number_of_time_steps,q1_flow_rate,'Qlhk',location)
+    gen_dfs0(number_of_time_steps, q2_flow_rate, 'Qcs', location)
+    gen_dfs0(number_of_time_steps, q3_flow_rate, 'Qyg', location)
+    # 定制 m21fm，修改elevation、number_of_time_steps
+    gen_m21fm(elevation, number_of_time_steps, location)
+    # TODO: invoke FemEngine.exe
+    _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngine.exe'
+    command = f'{_FemEngine_location} run'
+    try:
+        subprocess.run(command, capture_output=True, text=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(e)

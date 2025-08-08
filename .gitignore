@@ -10,3 +10,4 @@ script-generated/*
 .venv
 /assets/test/
 /assets/generated/
+/logs/

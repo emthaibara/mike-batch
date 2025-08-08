@@ -1,67 +1,63 @@
-import colorsys
 import math
 from functools import lru_cache
 import pandas as pd
 from colorama import Fore
-from tqdm import tqdm
 
-from src.common import q1_cases_path, q2_cases_path, q3_cases_path, z0_cases_path, v0_cases_path
-
+from src.common import z0_cases_path, v0_cases_path
 
 # 为了代码的统一性，这里不对原先代码做变动，设置一个转换表 （z key <----> v的序号）
 __key_to_num_dict = {f'z0-{i}': 16 - i for i in range(1, 16)}
 __num_to_key_dict = {16 - i: f'z0-{i}' for i in range(1, 16)}
-
 def __do_calculate(q1 : float,
                    q2 : float,
                    q3 : float,
                    z0_key : str) -> float:
     # 初始水位序号
     initial_water_level_num = __key_to_num_dict[z0_key] #15
-    # print(f'{Fore.GREEN}初始水位序号: {initial_water_level_num}')
+    print(f'{Fore.GREEN}初始水位序号: {initial_water_level_num}')
     # 初始库容dq
     v0 = get_v0_cases().loc[z0_key].iloc[0] #4881
-    # print(f'{Fore.GREEN}初始库容dq: {v0}')
+    print(f'{Fore.GREEN}初始库容dq: {v0}')
     # 净流量v0
     dq = q1 + q2 - q3 #-300
-#     print(f'{Fore.GREEN}净流量v0: {dq}')
+    print(f'{Fore.GREEN}净流量v0: {dq}')
     # 如果等于0，为了代码的统一性，我这里设置成无穷大，因为后面的算式他会做被除数
     if dq == 0:
         dq = float('inf')
 
     # 最大目标库容v1
     v1 = get_v0_cases().loc['z0-15' if dq < 0 else 'z0-1'].iloc[0]
-#     print(f'{Fore.GREEN}最大目标库容v1: {v1}')
+    print(f'{Fore.GREEN}最大目标库容v1: {v1}')
     # 最长所需时间t1
     max_time_required_t1 = (v0 - v1) / (-dq) / 0.36
-#     print(f'{Fore.GREEN}最长所需时间T1: {max_time_required_t1}')
+    print(f'{Fore.GREEN}最长所需时间T1: {max_time_required_t1}')
     # 限制后最短时间t1
-    max_time_after_limit_t1 = min(max_time_required_t1, 10 if q2 < 0 else 7)
-#     print(f'{Fore.GREEN}限制后最短时间t1: {max_time_after_limit_t1}')
+    min_time_after_limit_t1 = min(max_time_required_t1, 10 if q2 < 0 else 7)
+    print(f'{Fore.GREEN}限制后最短时间t1: {min_time_after_limit_t1}')
     # 最短目标水位序号
     if max_time_required_t1 < 0:
         shortest_target_water_level_num = min(15,initial_water_level_num + 1)
     else:
         shortest_target_water_level_num = max(1,initial_water_level_num - 1)
-#     print(f'{Fore.GREEN}最短目标水位序号: {shortest_target_water_level_num}')
+    print(f'{Fore.GREEN}最短目标水位序号: {shortest_target_water_level_num}')
     # 最短目标水位序号对应的初始库容值
     shortest_target_water_level_key = __num_to_key_dict[shortest_target_water_level_num]
     # 最短目标库容v2
     v2 = get_v0_cases().loc[shortest_target_water_level_key].iloc[0]
-#     print(f'{Fore.GREEN}最短目标库容v2: {v2}')
+    print(f'{Fore.GREEN}最短目标库容v2: {v2}')
     # 最短所需时间t2
     max_time_required_t2 = (v0 - v2) / (-dq) / 0.36
-#     print(f'{Fore.GREEN}最短所需时间T2: {max_time_required_t2}')
+    print(f'{Fore.GREEN}最短所需时间T2: {max_time_required_t2}')
     # 限制后最短时间t2
     min_time_after_limit_t2 = min(max_time_required_t2,5)
-#     print(f'{Fore.GREEN}限制后最短时间T2: {min_time_after_limit_t2}')
+    print(f'{Fore.GREEN}限制后最短时间T2: {min_time_after_limit_t2}')
     # 计算时长 = 插值系数 * 计算时常
     #获取插值系数
     interpolation_factor = __get_interpolation_factor(q1 ,q2 ,q3)
-#     print(f'{Fore.GREEN}最终插值系数: {interpolation_factor}')
-#     print(f'{Fore.GREEN}======================================================================')
+    print(f'{Fore.GREEN}最终插值系数: {interpolation_factor}')
+    print(f'{Fore.GREEN}======================================================================')
     # 开始计算
-    time = min_time_after_limit_t2 + (max_time_after_limit_t1 - min_time_after_limit_t2) * interpolation_factor
+    time = min_time_after_limit_t2 + (min_time_after_limit_t1 - min_time_after_limit_t2) * interpolation_factor
     # 四舍五入保留小数点后两位
     # 向上取，例如：6.19，6.05，6.22 ----> 6.5h
     result = math.ceil(round(time, 2) / 0.5) * 0.5
@@ -110,23 +106,11 @@ def get_v0_cases():
     return __load_cases(v0_cases_path)
 def get_z0_cases():
     return __load_cases(z0_cases_path)
-def get_q1_cases():
-    return __load_cases(q1_cases_path)
-def get_q2_cases():
-    return __load_cases(q2_cases_path)
-def get_q3_cases():
-    return __load_cases(q3_cases_path)
 
 # 计算时长入口
-def calculate_duration(q1_key : str,
-                       q2_key : str,
-                       q3_key : str,
-                       z0_key : str) -> float:
-    q1 = get_q1_cases().loc[q1_key].iloc[0]
-    q2 = get_q2_cases().loc[q2_key].iloc[0]
-    q3 = get_q3_cases().loc[q3_key].iloc[0]
-    # print(f'{Fore.GREEN}======================================================================')
-    # print(f'{Fore.GREEN}{z0_key}/{q1_key}/{q2_key}/{q3_key}')
-    return __do_calculate(q1, q2, q3, z0_key)
-
-# print(f'{calculate_duration('q1-2','q2-9','q3-3','z0-1')}h')
+def calculate_duration(z0_key : str,
+                       q1_value : float,
+                       q2_value : float,
+                       q3_value : float) -> float:
+    print(f'{Fore.GREEN}======================================================================')
+    return __do_calculate(q1_value, q2_value, q3_value, z0_key)
