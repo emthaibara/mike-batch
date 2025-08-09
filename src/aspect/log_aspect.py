@@ -50,7 +50,7 @@ class ColoredFormatter(picologging.Formatter):
 def init_picologging(*args, **kwargs):
     if not os.path.exists(__log_dir):
         os.makedirs(__log_dir)
-    log_file_path = os.path.join(__log_dir, f"mike-batch-{datetime.now().strftime("%Y-%m-%d-%H:%M:%S")}.log")
+    log_file_path = os.path.join(__log_dir, f"mike-batch-{datetime.now().strftime("%Y-%m-%d-%H:%M-%S")}.log")
     file_formatter = picologging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
