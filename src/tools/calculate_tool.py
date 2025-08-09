@@ -2,7 +2,7 @@ import math
 from functools import lru_cache
 import pandas as pd
 import picologging
-from src.aspect import log_name
+from src.aspect import log_name, init_picologging
 from src.common import z0_cases_path, v0_cases_path
 
 __logger = picologging.getLogger(log_name)
@@ -59,9 +59,17 @@ def __do_calculate(q1 : float,
     time = min_time_after_limit_t2 + (min_time_after_limit_t1 - min_time_after_limit_t2) * interpolation_factor
     # 四舍五入保留小数点后两位
     # 向上取，例如：6.19，6.05，6.22 ----> 6.5h
-    result = math.ceil(round(time, 2) / 0.5) * 0.5
+    result = roundup_excel(time / 0.5, 0) * 0.5
     __logger.info(f'最终计算时长为: {result}')
     return result
+
+def roundup_excel(number, decimal_places):
+    """模拟 Excel ROUNDUP 的行为，总是远离零点取整。"""
+    multiplier = 10**decimal_places
+    if number >= 0:
+        return math.ceil(number * multiplier) / multiplier
+    else:
+        return math.floor(number * multiplier) / multiplier
 
 # 计算插值系数
 def __get_interpolation_factor(q1 : float ,q2 : float ,q3 : float)->float:
@@ -113,3 +121,6 @@ def calculate_duration(z0_key : str,
                        q2_value : float,
                        q3_value : float) -> float:
     return __do_calculate(q1_value, q2_value, q3_value, z0_key)
+
+
+# print(calculate_duration('z0-5',280,125,230))
