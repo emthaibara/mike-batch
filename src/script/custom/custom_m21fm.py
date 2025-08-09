@@ -1,14 +1,13 @@
 import os.path
-from src.common import assets_path
+from src.common import assets_path, origin_m21fm_path
 
-m21fm_path = os.path.join(assets_path, 'required', 'LHKHX.m21fm')
-format_m21fm_path = os.path.join(assets_path, 'test', 'Script-gen-LHKHX.m21fm')
+
 # 格式化m21fm：去掉所有空行，紧凑布局
 def __format_m21fm():
-    with open(m21fm_path, 'r', encoding='utf-8') as f:
+    with open(origin_m21fm_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
     new_section = [line for line in lines if line.strip() != '']
-    with open(m21fm_path, 'w', encoding='utf-8') as f:
+    with open(origin_m21fm_path, 'w', encoding='utf-8') as f:
         f.writelines(new_section)
 # __format_m21fm()
 
@@ -39,14 +38,14 @@ def __gen(context : list[str],
 
 # target---surface_elevation_constant
 # target---number_of_time_steps
-def gen_m21fm(elevation: float,
+def gen_m21fm(surface_elevation_constant: float,
               number_of_time_steps: int,
               write_path):
 
-    with open(format_m21fm_path, 'r', encoding='utf-8') as f:
+    with open(origin_m21fm_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
-    context = __gen(lines, elevation, 'elevation')
+    context = __gen(lines, surface_elevation_constant, 'surface_elevation_constant')
     modified_context = __gen(context, number_of_time_steps, 'number_of_time_steps')
 
     with open(write_path, 'w', encoding='utf-8') as f:

@@ -2,7 +2,7 @@ import os.path
 import mikeio.dfsu
 import numpy as np
 import pandas as pd
-from mikeio import ItemInfo, EUMType, EUMUnit
+from mikeio import ItemInfo, EUMType, EUMUnit, Dfs0
 from src.common import assets_path
 
 __start_time = '2023-01-01 08:00:00' #起始时间
@@ -81,19 +81,8 @@ def gen_q2_dfs0(number_of_time_steps : int,
      .to_dfs(os.path.join(write_path,'Qcs.dfs0'))
      )
 
-# print('q1-280流量，0.5h时常--->180步长，判断为小流量，总步长为=180+360=540，总的预热时间为1h')
-# gen_q1_q3_dfs0(180,
-#          280,
-#          'Qlhk',
-#          os.path.join(assets_path, 'generated' , 'Qlhk-small-flow_rate.dfs0'))
-#
-# gen_q1_q3_dfs0(2880,
-#          600,
-#          'Qlhk',
-#          os.path.join(assets_path, 'generated' , 'Qlhk-big-flow_rate.dfs0'))
-
-# csv_path = os.path.join(assets_path, 'test', 'Qout_LHK_mikeio_convert.csv')
-# def __dfs0_convert_to_csv():
-#     dsf0_path = os.path.join(assets_path, 'test', 'Qout_LHK.dfs0')
-#     data = Dfs0(dsf0_path).read()
-#     data.to_dataframe().to_csv(csv_path, index=True)
+csv_path = os.path.join(assets_path, 'test', 'Qout_LHK_mikeio_convert.csv')
+def __dfs0_convert_to_csv():
+    dsf0_path = os.path.join(assets_path, 'test', 'Qout_LHK.dfs0')
+    data = Dfs0(dsf0_path).read()
+    data.to_dataframe().to_csv(csv_path, index=True)

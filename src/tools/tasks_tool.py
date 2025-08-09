@@ -82,9 +82,3 @@ def __init_tasks_cache():
                         desc='batch write using pipeline to caching tasks'):
         pipe.hset(KEY, str(task_id), str(StatusEnum.not_started.value))
     pipe.execute()
-
-
-if __name__ == '__main__':
-    __task_total = 84374
-    __init_tasks_cache()
-    __rd.delete(KEY)

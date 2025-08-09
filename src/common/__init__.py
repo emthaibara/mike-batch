@@ -18,4 +18,5 @@ __all__ = ['assets_path',
            'generate_electricity',
            'pump',
            'do_nothing',
-           'logs_path',]
+           'logs_path',
+           'origin_m21fm_path']

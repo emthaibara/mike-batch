@@ -1,12 +1,8 @@
 import itertools
 import os
-
 import orjson
 import pandas as pd
 import picologging
-from colorama import Fore
-from tqdm import tqdm
-
 from src.aspect import log_name
 from src.common import required_path, q1_cases_file_name, q2_cases_file_name, q3_cases_file_name, do_nothing, \
     generate_electricity, pump, script_generated_path
