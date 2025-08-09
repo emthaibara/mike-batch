@@ -64,7 +64,7 @@ def gen_q1_q3_dfs0(number_of_time_steps : int,
     # 写入dfs0（即根据上述数据生成新的dfs0文件）,由于使用的mikeio版本为2.6.0与旧版的操作不一样,需要注意一下
     (mikeio
      .from_pandas(df, items=[meta_data])
-     .to_dfs(os.path.join(write_path,f'{dfs0_type}_LHKHK.dfs0'))
+     .to_dfs(os.path.join(write_path,f'{'Qout_LHK' if dfs0_type == 'Qlhk' else 'Qout_YGYJ'}.dfs0'))
      )
 
 def gen_q2_dfs0(number_of_time_steps : int,
@@ -78,7 +78,7 @@ def gen_q2_dfs0(number_of_time_steps : int,
     meta_data = ItemInfo('Qcs', EUMType.Discharge, EUMUnit.meter_pow_3_per_sec)
     (mikeio
      .from_pandas(df, items=[meta_data])
-     .to_dfs(os.path.join(write_path,'Qcs_LHKHK.dfs0'))
+     .to_dfs(os.path.join(write_path,'Qcs_LHKHX.dfs0'))
      )
 
 csv_path = os.path.join(assets_path, 'test', 'Qout_LHK_mikeio_convert.csv')

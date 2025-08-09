@@ -9,7 +9,7 @@ def __format_m21fm():
     new_section = [line for line in lines if line.strip() != '']
     with open(origin_m21fm_path, 'w', encoding='utf-8') as f:
         f.writelines(new_section)
-# __format_m21fm()
+__format_m21fm()
 
 # 逐行读取并查找target，重写拼接section成context，再写入新文件（不变动原来的文件）
 def __gen(context : list[str],

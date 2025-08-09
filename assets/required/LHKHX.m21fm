@@ -48,7 +48,7 @@
    EndSect  // DOMAIN
    [TIME]
       Touched = 1
-      start_time = 2023, 1, 1, 8, 00, 00
+      start_time = 2023, 1, 1, 8, 40, 0
       time_step_interval = 10
       number_of_time_steps = 3000
    EndSect  // TIME
@@ -627,7 +627,7 @@
       [INITIAL_CONDITIONS]
          Touched = 1
          type = 1
-         surface_elevation_constant = 2599
+         surface_elevation_constant = 2598.0
          u_velocity_constant = 0
          v_velocity_constant = 0
          w_velocity_constant = 0
