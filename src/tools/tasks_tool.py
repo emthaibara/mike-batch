@@ -8,7 +8,7 @@ from src.enums import StatusEnum
 
 __tasks_json_path = os.path.join(script_generated_path,'tasks.json')
 __cases_json_path = os.path.join(script_generated_path,'cases.json')
-__rd = redis.Redis(host='localhost', port=6379, decode_responses=True)
+__rd = redis.Redis(host='192.168.31.253', port=6379, decode_responses=True)
 __task_total = int()
 __cases = list()
 __tasks = list()

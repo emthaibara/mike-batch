@@ -10,7 +10,7 @@ from src.aspect.simulation_aspect import load_and_persistence
 from src.common import simulation_path
 from src.enums import StatusEnum
 from src.script import q1_key, q2_key, q3_key
-from src.script.custom import gen_m21fm,gen_dfs0
+from src.script.custom import gen_q1_q3_dfs0, gen_q2_dfs0
 from src.tools import persistence, KEY
 
 
@@ -33,7 +33,8 @@ def start_simulation(cases=None, pending_tasks=None,stop_event : threading.Event
         persistence()
 
 def worker(task_id, cases):
-    __rd = redis.Redis(host='localhost', port=6379, decode_responses=True)
+    # __rd = redis.Redis(host='localhost', port=6379, decode_responses=True)
+    __rd = redis.Redis(host='192.168.31.253', port=6379, decode_responses=True)
     # 更改状态为任务进行中⛔️
     __rd.hset(KEY, str(task_id), str(StatusEnum.in_process.value))
     # simulation
@@ -50,15 +51,15 @@ def work(case):
     q3_flow_rate = case[q3_key]
     number_of_time_steps = case['number_of_time_steps']
     # 定制 dfs0
-    gen_dfs0(number_of_time_steps,q1_flow_rate,'Qlhk',location)
-    gen_dfs0(number_of_time_steps, q2_flow_rate, 'Qcs', location)
-    gen_dfs0(number_of_time_steps, q3_flow_rate, 'Qyg', location)
-    # 定制 m21fm，修改elevation、number_of_time_steps
-    gen_m21fm(elevation, number_of_time_steps, location)
-    # TODO: invoke FemEngine.exe
-    _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngine.exe'
-    command = f'{_FemEngine_location} run'
-    try:
-        subprocess.run(command, capture_output=True, text=True, check=True)
-    except subprocess.CalledProcessError as e:
-        print(e)
+    gen_q1_q3_dfs0(number_of_time_steps,q1_flow_rate,'Qlhk',location)
+    gen_q2_dfs0(number_of_time_steps, q2_flow_rate, location)
+    gen_q1_q3_dfs0(number_of_time_steps, q3_flow_rate, 'Qyg', location)
+    # # 定制 m21fm，修改elevation、number_of_time_steps
+    # gen_m21fm(elevation, number_of_time_steps, location)
+    # # TODO: invoke FemEngine.exe
+    # _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngine.exe'
+    # command = f'{_FemEngine_location} run'
+    # try:
+    #     subprocess.run(command, capture_output=True, text=True, check=True)
+    # except subprocess.CalledProcessError as e:
+    #     print(e)
