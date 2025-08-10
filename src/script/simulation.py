@@ -62,7 +62,7 @@ def work(case):
     gen_m21fm(elevation, number_of_time_steps, m21fm_path)
 
     """ invoke FemEngine.exe 开始模拟（阻塞） """
-    _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngine.exe'
+    _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngineHD.exe'
     try:
         subprocess.run([_FemEngine_location, m21fm_path, '/run'],
                        capture_output=True, text=True, check=True)

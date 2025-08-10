@@ -48,7 +48,7 @@
    EndSect  // DOMAIN
    [TIME]
       Touched = 1
-      start_time = 2023, 1, 1, 8, 40, 0
+      start_time = 2023, 1, 1, 8, 0, 0
       time_step_interval = 10
       number_of_time_steps = 3000
    EndSect  // TIME

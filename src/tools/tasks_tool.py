@@ -46,7 +46,7 @@ def persistence(is_return=False):
         for task in cached_tasks.items():
             tasks_json[KEY].append({'task_id': int(task[0]), 'task_status': int(task[1])})
         with open(__tasks_json_path,'wb') as f:
-            f.write(orjson.dumps(tasks_json))
+            f.write(orjson.dumps(tasks_json,option=orjson.OPT_INDENT_2))
             return None
 
 # 任务筛选，如果该任务状态未完成则

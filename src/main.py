@@ -1,4 +1,5 @@
 import os.path
+import subprocess
 import threading
 import time
 
@@ -58,6 +59,7 @@ def log_test():
 """
 def _run_one_case_simulation():
     location = os.path.join(assets_path,'test')
+    #
     elevation = 2599
     q1_flow_rate = 125
     q2_flow_rate = -625
@@ -66,8 +68,15 @@ def _run_one_case_simulation():
     gen_q1_q3_dfs0(number_of_time_steps,q1_flow_rate,'Qlhk',location)
     gen_q2_dfs0(number_of_time_steps,q2_flow_rate,location)
     gen_q1_q3_dfs0(number_of_time_steps,q3_flow_rate,'Qyg',location)
-    gen_m21fm(elevation,number_of_time_steps,location)
+    gen_m21fm(elevation,number_of_time_steps + 360,location)
 
 if __name__ == '__main__':
-    main()
+    # _run_one_case_simulation()
+    """ invoke FemEngine.exe 开始模拟 """
+    _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngineHD.exe'
+    try:
+        subprocess.run([_FemEngine_location,os.path.join(assets_path,'test','LHKHX.m21fm'), '/run'],
+                       capture_output=True, text=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(e)
     # main()

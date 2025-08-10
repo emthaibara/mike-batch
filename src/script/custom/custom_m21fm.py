@@ -48,5 +48,5 @@ def gen_m21fm(surface_elevation_constant: float,
     context = __gen(lines, surface_elevation_constant, 'surface_elevation_constant')
     modified_context = __gen(context, number_of_time_steps, 'number_of_time_steps')
 
-    with open(os.path.join(write_path,'LHKHK.m21fm'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(write_path,'LHKHX.m21fm'), 'w', encoding='utf-8') as f:
         f.writelines(modified_context)

@@ -41,7 +41,7 @@ def gen_q1_q3_dfs0(number_of_time_steps : int,
 
     """ 预热阶段四  q1小流量=15min  q2大流量=20分钟"""
     number_of_stage_four_preheat_time_steps = int(((30 if flow_rate < __dividing else 15) * 60) / __time_step_seconds)
-    stage_four_data = np.full((number_of_stage_four_preheat_time_steps,),flow_rate)
+    stage_four_data = np.full((number_of_stage_four_preheat_time_steps + 1,),flow_rate)
     # print('预热阶段四:',stage_four_data,'30min-60min步长为：',stage_four_data.__len__())
 
     """ 目标流量 """
@@ -70,7 +70,7 @@ def gen_q1_q3_dfs0(number_of_time_steps : int,
 def gen_q2_dfs0(number_of_time_steps : int,
              flow_rate: float,
              write_path):
-    data = np.concatenate([np.full((360,),0), np.full((number_of_time_steps,),flow_rate)])
+    data = np.concatenate([np.full((361,),0), np.full((number_of_time_steps,),flow_rate)])
     time_list = [pd.Timestamp(__start_time) + pd.Timedelta(seconds=i * __time_step_seconds)
                  for i in range(data.__len__())]
     # 封装成mikeio需要的DataFrame
