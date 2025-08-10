@@ -1,5 +1,6 @@
 import os.path
 from src.common import assets_path, origin_m21fm_path
+from tools.permissions_tool import set_file_only_read
 
 
 # 格式化m21fm：去掉所有空行，紧凑布局
@@ -12,14 +13,18 @@ def __format_m21fm():
 __format_m21fm()
 
 # 逐行读取并查找target，重写拼接section成context，再写入新文件（不变动原来的文件）
-def __gen(context : list[str],
+def __modify_m21fm(context : list[str],
           new_value: float,
-          target : str):
+          target : str,
+          number_of_occurrences : int):
     first_appear_target_row = -1
     old_target_row = ''
-    # 需要修改的目标属性位于首次出现的位置,记录第一次出现位置就行
+    # 需要修改的目标属性位于n次出现的位置,记录第n次出现位置就行
+    count = 0
     for i, line in enumerate(context):
         if target in line:
+            count += 1
+        if count == number_of_occurrences:
             old_target_row = line
             first_appear_target_row = i
             break
@@ -36,17 +41,25 @@ def __gen(context : list[str],
 
     return new_m21fm_context
 
-# target---surface_elevation_constant
-# target---number_of_time_steps
+# modify target--->surface_elevation_constant
+# modify target--->number_of_time_steps
+# modify target--->last_time_step
 def gen_m21fm(surface_elevation_constant: float,
               number_of_time_steps: int,
               write_path):
 
     with open(origin_m21fm_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
+    """ 加上预热的1h=360个步长 """
+    total_steps = number_of_time_steps + 360
+    context = __modify_m21fm(lines, surface_elevation_constant, 'surface_elevation_constant',1)
+    context = __modify_m21fm(context, total_steps, 'number_of_time_steps', 1)
+    context = __modify_m21fm(context, total_steps, 'last_time_step', 2)
+    context = __modify_m21fm(context, total_steps, 'last_time_step', 3)
+    context = __modify_m21fm(context, total_steps, 'last_time_step', 4)
+    context = __modify_m21fm(context, total_steps, 'last_time_step', 5)
+    context = __modify_m21fm(context, total_steps, 'last_time_step', 6)
+    with open(write_path, 'w', encoding='utf-8') as f:
+        f.writelines(context)
 
-    context = __gen(lines, surface_elevation_constant, 'surface_elevation_constant')
-    modified_context = __gen(context, number_of_time_steps, 'number_of_time_steps')
 
-    with open(os.path.join(write_path,'LHKHX.m21fm'), 'w', encoding='utf-8') as f:
-        f.writelines(modified_context)

@@ -71,8 +71,8 @@ def init_picologging(*args, **kwargs):
     __logger.addHandler(console_handler)
 
     # 设置日志级别
-    __logger.setLevel(picologging.INFO)
+    __logger.setLevel(picologging.DEBUG)
 
-    print("Picologging has been initialized!")
+    __logger.info("Picologging日志配置初始化完成!")
     # --- 配置结束 ---
     yield aspectlib.Proceed(*args, **kwargs)

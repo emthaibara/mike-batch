@@ -10,9 +10,9 @@ from src.tools import get_z0_cases, KEY
 from src.tools.calculate_tool import calculate_duration
 
 __type = {
-    generate_electricity : '发电',
-    pump : '抽水',
-    do_nothing : '不抽不发'
+    generate_electricity : 'gen',
+    pump : 'pump',
+    do_nothing : 'do_nothing',
 }
 __logger = picologging.getLogger(log_name)
 z0_key = f'elevation'
@@ -22,7 +22,7 @@ q3_key = f'q3-flow_rate'
 # gen、pump、do_nothing
 def __filter_case(case_type : str,q2_offset,count_offset):
     # 根据类型构建路径
-    basic_location = os.path.join(required_path, case_type)
+    basic_location = os.path.join(required_path, __type[case_type])
     q1_cases_path = os.path.join(basic_location, q1_cases_file_name)
     q2_cases_path = os.path.join(basic_location, q2_cases_file_name)
     q3_cases_path = os.path.join(basic_location, q3_cases_file_name)
@@ -53,7 +53,7 @@ def __filter_case(case_type : str,q2_offset,count_offset):
         q3_value = q3_cases.loc[combo[2][0]].iloc[0]
 
         __logger.info("=======================================================================")
-        __logger.info(f'{__type[case_type]}工况={combo[3][0]}/{combo[0][0]}/{combo[1][0]}/{combo[2][0]} 正在计算时长...')
+        __logger.info(f'{case_type}工况={combo[3][0]}/{combo[0][0]}/{combo[1][0]}/{combo[2][0]} 正在计算时长...')
         duration = calculate_duration(combo[3][0],q1_value,q2_value,q3_value)
         if duration <= 0:
             continue
@@ -72,7 +72,7 @@ def __filter_case(case_type : str,q2_offset,count_offset):
         count += 1
         combinations[f'{case_type}_cases'].append(value)
     try:
-        write_path = os.path.join(script_generated_path, f'{case_type}_cases.json')
+        write_path = os.path.join(script_generated_path, f'{__type[case_type]}_cases.json')
         with open(write_path, 'wb') as f:
             f.write(orjson.dumps(combinations, option=orjson.OPT_INDENT_2))
     except IOError as e:

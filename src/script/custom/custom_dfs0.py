@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from mikeio import ItemInfo, EUMType, EUMUnit, Dfs0
 from src.common import assets_path
+from tools.permissions_tool import set_file_only_read
 
 __start_time = '2023-01-01 08:00:00' #起始时间
 __time_step_seconds = 10 # 秒
@@ -62,9 +63,10 @@ def gen_q1_q3_dfs0(number_of_time_steps : int,
     meta_data = ItemInfo(dfs0_type, EUMType.Discharge, EUMUnit.meter_pow_3_per_sec)
 
     # 写入dfs0（即根据上述数据生成新的dfs0文件）,由于使用的mikeio版本为2.6.0与旧版的操作不一样,需要注意一下
+    path = os.path.join(write_path,f'{'Qout_LHK' if dfs0_type == 'Qlhk' else 'Qout_YGYJ'}.dfs0')
     (mikeio
      .from_pandas(df, items=[meta_data])
-     .to_dfs(os.path.join(write_path,f'{'Qout_LHK' if dfs0_type == 'Qlhk' else 'Qout_YGYJ'}.dfs0'))
+     .to_dfs(path)
      )
 
 def gen_q2_dfs0(number_of_time_steps : int,
@@ -76,13 +78,13 @@ def gen_q2_dfs0(number_of_time_steps : int,
     # 封装成mikeio需要的DataFrame
     df = pd.DataFrame({'Qcs': data}, index=time_list)
     meta_data = ItemInfo('Qcs', EUMType.Discharge, EUMUnit.meter_pow_3_per_sec)
+    path  = os.path.join(write_path,'Qcs_LHKHX.dfs0')
     (mikeio
      .from_pandas(df, items=[meta_data])
-     .to_dfs(os.path.join(write_path,'Qcs_LHKHX.dfs0'))
+     .to_dfs(path)
      )
 
-csv_path = os.path.join(assets_path, 'test', 'Qout_LHK_mikeio_convert.csv')
 def __dfs0_convert_to_csv():
     dsf0_path = os.path.join(assets_path, 'test', 'Qout_LHK.dfs0')
     data = Dfs0(dsf0_path).read()
-    data.to_dataframe().to_csv(csv_path, index=True)
+    data.to_dataframe().to_csv(os.path.join(assets_path, 'test', 'Qout_LHK_mikeio_convert.csv'), index=True)

@@ -44,7 +44,7 @@ def persistence(is_return=False):
     else:
         tasks_json = {KEY:[]}
         for task in cached_tasks.items():
-            tasks_json[KEY].append({'task_id': int(task[0]), 'task_status': int(task[1])})
+            tasks_json[KEY].append({'task_id': int(task[0]), 'task_status': task[1]})
         with open(__tasks_json_path,'wb') as f:
             f.write(orjson.dumps(tasks_json,option=orjson.OPT_INDENT_2))
             return None
