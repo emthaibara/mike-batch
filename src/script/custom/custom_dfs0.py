@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from mikeio import ItemInfo, EUMType, EUMUnit, Dfs0
 from src.common import assets_path
-from tools.permissions_tool import set_file_only_read
 
 __start_time = '2023-01-01 08:00:00' #起始时间
 __time_step_seconds = 10 # 秒

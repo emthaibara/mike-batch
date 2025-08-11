@@ -80,6 +80,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/assets/test/z.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

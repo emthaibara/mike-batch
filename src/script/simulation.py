@@ -1,21 +1,17 @@
 import math
-import multiprocessing
 import os
 import shutil
 import subprocess
 import threading
 import time
 from datetime import datetime
-from pathlib import Path
-
 import picologging
 from apscheduler.jobstores import redis
 from colorama import Fore
 from joblib import Parallel, delayed
-from tqdm import tqdm
-from src.aspect import log_name
+from src.aspect import log_name, init_logging
 from src.aspect.simulation_aspect import load_and_persistence
-from src.common import simulation_path, rd_host, rd_port, generate_electricity, pump, do_nothing, mesh_path, dfsu_path
+from src.common import simulation_path, rd_host, rd_port, mesh_path, dfsu_path
 from src.enums import StatusEnum
 from src.script import q1_key, q2_key, q3_key
 from src.script.custom import gen_q1_q3_dfs0, gen_q2_dfs0, gen_m21fm
@@ -53,6 +49,8 @@ def worker(task_id, cases):
     rd.close()
 
 def work(case):
+    init_logging()
+    logger = picologging.getLogger(log_name)
     """ 从case中获取信息：水位值（m21fm需要修改的高程值）、q1、q2、q3的目标流量、时间步长"""
     path = case['path']
     location = os.path.join(simulation_path, path)
@@ -75,11 +73,10 @@ def work(case):
     shutil.copy(str(dfsu_path), os.path.join(str(simulation_path), str(path), 'Manning.dfsu'))
     shutil.copy(str(mesh_path), os.path.join(str(simulation_path), str(path), 'LHKHX.mesh'))
 
-    time.sleep(3)
     """ invoke FemEngine.exe 开始模拟（阻塞） """
     # 起始时间
     start_time = time.time()
-    print(Fore.MAGENTA +f'⏳start time=【{datetime.now().strftime("%Y-%m-%d-%H:%M-%S")}】-=-=-=--=-该工况水动力模拟正在进行--->【{case['type']}】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate},步长={number_of_time_steps}】,path={path}  processing......')
+    logger.info(Fore.MAGENTA +f'⏳该工况水动力模拟正在进行--->【{case['type']}】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate},步长={number_of_time_steps}】,path={path}  processing......')
     _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngineHD.exe'
     subprocess.run([_FemEngine_location, m21fm_path, '/run'],
                    capture_output=False, text=True, check=True)
@@ -93,6 +90,6 @@ def work(case):
     seconds = elapsed_time % 60
     # 将时间格式化为字符串
     elapsed_time_str = f"{int(hours)}小时 {int(minutes)}分钟 {seconds:.2f}秒"
-    print(Fore.MAGENTA  + f'✅end time=【{datetime.now().strftime("%Y-%m-%d-%H:%M-%S")}】-=-=-=--=-该工况水动力模拟已完成：【{case['type']}】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate},步长={number_of_time_steps}】,该工况模拟耗时【{elapsed_time_str}】,path={path} !!!')
+    logger.info(Fore.MAGENTA  + f'✅该工况水动力模拟已完成--->【{case['type']}】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate},步长={number_of_time_steps}】,path=【{path}】 该工况模拟耗时【{elapsed_time_str}】')
 
 

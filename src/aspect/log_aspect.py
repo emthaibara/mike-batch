@@ -8,8 +8,6 @@ from aspectlib import Aspect
 from src.common import logs_path
 
 log_name = "mike-batch-script"
-__logger = picologging.getLogger(log_name)
-__log_dir = logs_path
 
 # ANSI 颜色常量
 class AnsiColors:
@@ -48,9 +46,14 @@ class ColoredFormatter(picologging.Formatter):
 
 @Aspect
 def init_picologging(*args, **kwargs):
-    if not os.path.exists(__log_dir):
-        os.makedirs(__log_dir)
-    log_file_path = os.path.join(__log_dir, f"mike-batch-{datetime.now().strftime("%Y-%m-%d-%H:%M-%S")}.log")
+    init_logging()
+    yield aspectlib.Proceed(*args, **kwargs)
+
+def init_logging():
+    if not os.path.exists(logs_path):
+        os.makedirs(logs_path)
+    logger = picologging.getLogger(log_name)
+    log_file_path = os.path.join(logs_path, f"mike-batch-all.log")
     file_formatter = picologging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
@@ -67,12 +70,10 @@ def init_picologging(*args, **kwargs):
     console_handler.setFormatter(console_formatter)
 
     # 5. 将处理器添加到 logger
-    __logger.addHandler(file_handler)
-    __logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
 
     # 设置日志级别
-    __logger.setLevel(picologging.DEBUG)
+    logger.setLevel(picologging.INFO)
 
-    __logger.info("Picologging日志配置初始化完成!")
-    # --- 配置结束 ---
-    yield aspectlib.Proceed(*args, **kwargs)
+
