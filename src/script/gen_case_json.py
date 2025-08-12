@@ -6,8 +6,7 @@ import picologging
 from src.aspect import log_name
 from src.common import required_path, q1_cases_file_name, q2_cases_file_name, q3_cases_file_name, do_nothing, \
     generate_electricity, pump, script_generated_path
-from src.tools import get_z0_cases, KEY
-from src.tools.calculate_tool import calculate_duration
+from src.tools.calculate_tool import calculate_duration, get_z0_cases
 
 __type = {
     generate_electricity : 'gen',
@@ -43,7 +42,7 @@ def __filter_case(case_type : str,q2_offset,count_offset):
     q3_options = [(f"q3-{i + 1}", i + 1) for i in range(q3_total)]
     z0_options = [(f"z0-{i + 1}", i + 1) for i in range(z0_total)]
     # json
-    combinations = {f'{case_type}_cases':[]}
+    combinations = {f'{__type[case_type]}_cases':[]}
     count = 0
     for cases_id,combo in enumerate(itertools.product(q1_options, q2_options, q3_options, z0_options)):
 
@@ -61,23 +60,23 @@ def __filter_case(case_type : str,q2_offset,count_offset):
         value = {
             'cases_id' : count + count_offset,
             'path' : os.path.join(combo[3][0],combo[0][0],combo[1][0],combo[2][0]),
-            z0_key : int(z0_value),
-            q1_key : int(q1_value),
-            q2_key : int(q2_value),
-            q3_key : int(q3_value),
+            z0_key : float(z0_value),
+            q1_key : float(q1_value),
+            q2_key : float(q2_value),
+            q3_key : float(q3_value),
             'duration' : duration,
             'number_of_time_steps': int((duration * 3600) / 10),
             'type' : case_type,
         }
         count += 1
-        combinations[f'{case_type}_cases'].append(value)
+        combinations[f'{__type[case_type]}_cases'].append(value)
     try:
         write_path = os.path.join(script_generated_path, f'{__type[case_type]}_cases.json')
         with open(write_path, 'wb') as f:
             f.write(orjson.dumps(combinations, option=orjson.OPT_INDENT_2))
     except IOError as e:
         print(f"写入文件时发生错误: {e}")
-    return combinations[f'{case_type}_cases']
+    return combinations[f'{__type[case_type]}_cases']
 
 def gen_cases_json():
     __cases = []

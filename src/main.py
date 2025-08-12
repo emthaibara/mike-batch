@@ -3,11 +3,15 @@ import os.path
 import subprocess
 import threading
 import time
+import os
+
 from src.aspect import init_picologging, check
+from src.common import assets_path
 from src.common import assets_path, generate_electricity, pump, do_nothing
-from src.script import start_timing_job
+from src.script import start_timing_job, gen_cases_json
 from src.script.custom import gen_q1_q3_dfs0, gen_q2_dfs0, gen_m21fm
 from src.script.simulation import start_simulation
+from src.script.statistics_cases import statistics_cases, scatter_plot
 
 
 def _run_one_case_simulation(elevation,
@@ -51,7 +55,7 @@ def _run_one_case_simulation(elevation,
             pump: '抽水',
             do_nothing: '不抽不发'
         }
-        print(f'【抽水】工况【z0=2599,q1=125,q2=-625,q3=150】,水动力模拟已完成✅,该工况模拟耗时【{elapsed_time_str}】')
+        print(f'✅【抽水】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate}】,水动力模拟已完成,该工况模拟耗时【{elapsed_time_str}】')
     except subprocess.CalledProcessError as e:
         print(e)
 
@@ -65,5 +69,12 @@ def main():
     """ 开始批量模拟（内容填充前置处理AOP独立出去了，这里传入空列表就行） """
     start_simulation([],[],stop_event=stop_event)
 
+@init_picologging
+def run_gen_cases():
+    gen_cases_json()
+    # statistics_cases()
 if __name__ == '__main__':
-    main()
+    # scatter_plot(os.path.join(assets_path,'limit_time'))
+    # scatter_plot(os.path.join(assets_path,'not_limit'))
+    # run_gen_cases()
+    _run_one_case_simulation()

@@ -9,6 +9,7 @@ __logger = picologging.getLogger(log_name)
 # 为了代码的统一性，这里不对原先代码做变动，设置一个转换表 （z key <----> v的序号）
 __key_to_num_dict = {f'z0-{i}': 16 - i for i in range(1, 16)}
 __num_to_key_dict = {16 - i: f'z0-{i}' for i in range(1, 16)}
+# TODO: 最短目标水位序号算式更新，并不加以时间限制输出图标验证规律
 def __do_calculate(q1 : float,
                    q2 : float,
                    q3 : float,
@@ -31,11 +32,11 @@ def __do_calculate(q1 : float,
     # 最长所需时间t1
     max_time_required_t1 = (v0 - v1) / (-dq) / 0.36
     __logger.info(f'最长所需时间T1: {max_time_required_t1}')
-    # 限制后最短时间t1
+    # TODO: 限制后最短时间t1
     min_time_after_limit_t1 = min(max_time_required_t1, 10 if q2 < 0 else 7)
     __logger.info(f'限制后最短时间t1: {min_time_after_limit_t1}')
     # 最短目标水位序号
-    if max_time_required_t1 < 0:
+    if dq > 0:
         shortest_target_water_level_num = min(15,initial_water_level_num + 1)
     else:
         shortest_target_water_level_num = max(1,initial_water_level_num - 1)
@@ -48,7 +49,7 @@ def __do_calculate(q1 : float,
     # 最短所需时间t2
     min_time_required_t2 = (v0 - v2) / (-dq) / 0.36
     __logger.info(f'最短所需时间T2: {min_time_required_t2}')
-    # 限制后最短时间t2
+    # TODO: 限制后最短时间t2
     min_time_after_limit_t2 = min(min_time_required_t2,5)
     __logger.info(f'限制后最短时间T2: {min_time_after_limit_t2}')
     # 计算时长 = 插值系数 * 计算时常
@@ -121,6 +122,5 @@ def calculate_duration(z0_key : str,
                        q2_value : float,
                        q3_value : float) -> float:
     return __do_calculate(q1_value, q2_value, q3_value, z0_key)
-
 
 # print(calculate_duration('z0-5',280,125,230))

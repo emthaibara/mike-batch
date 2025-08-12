@@ -28,7 +28,7 @@ def __draw_duration_distribution(cases_pd : pd.DataFrame,cases_type : str,bin_wi
     max_duration = cases_pd['duration'].max()
     bins = np.arange(start=min_duration, stop=max_duration + bin_width, step=bin_width)
     # 开始绘图
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 6),dpi=600)
     plt.hist(cases_pd['duration'], bins=bins, edgecolor='black')
     plt.xlabel('Duration (hours)')
     plt.ylabel('Number of Cases')
@@ -39,30 +39,44 @@ def __draw_duration_distribution(cases_pd : pd.DataFrame,cases_type : str,bin_wi
     plt.savefig(os.path.join(__chart_path,f'{cases_type}.png'), dpi=600)
     plt.show()
 
-def __draw_chart():
-    df = pd.read_csv(os.path.join(assets_path, 'test', 'z.csv'))
-    # 设置时间为索引
-    df.set_index('Unnamed: 0', inplace=True)
-    # 绘制多条折线
-    plt.figure(figsize=(24, 14), dpi=600)
-    plt.rcParams['font.sans-serif'] = ['SimHei', 'FangSong', 'STSong', 'Arial Unicode MS', 'Microsoft YaHei',
-                                       'Heiti TC', 'WenQuanYi Zen Hei']
-    plt.rcParams['axes.unicode_minus'] = False
-    for column in df.columns:
-        plt.plot(df.index, df[column], label=column)
-    plt.xlabel('time', fontsize=14)
-    plt.ylabel('elevation (m)', fontsize=14)
-    plt.title('不同断面水位变化折线图', fontsize=14)
-    plt.grid(True)
-    # 旋转日期标签，避免重叠
-    plt.xticks(rotation=40, ha='right')
-    # 调整图例的位置和列数，使其更清晰
-    plt.legend(title='section',
-               loc='upper left',
-               bbox_to_anchor=(1, 1),
-               ncol=1,
-               fontsize=10,
-               borderaxespad=0.0)
-    # 显示图形
-    plt.savefig(os.path.join(assets_path, 'test' , 'z.png'), dpi=600)
-    plt.show()
+
+def scatter_plot(file):
+    pump_cases = orjson.loads(open(os.path.join(file,'pump_cases.json'), 'rb').read())['pump_cases']
+    generate_electricity_cases = orjson.loads(open(os.path.join(file,'gen_cases.json'), 'rb').read())['gen_cases']
+    do_nothing_cases = orjson.loads(open(os.path.join(file,'do_nothing_cases.json'), 'rb').read())['do_nothing_cases']
+
+    pump_df = pd.DataFrame(pump_cases)
+    gen_electric_df = pd.DataFrame(generate_electricity_cases)
+    do_nothing_df = pd.DataFrame(do_nothing_cases)
+
+    __draw_scatter_plot(file, pump_df, 'pump')
+    __draw_scatter_plot(file, gen_electric_df, 'generate-electricity')
+    __draw_scatter_plot(file, do_nothing_df, 'do-nothing')
+
+def __draw_scatter_plot(file, cases_pd : pd.DataFrame,cases_type : str):
+    cases_pd['q1-q3'] = cases_pd['q1-flow_rate'] - cases_pd['q3-flow_rate']
+    cases_pd['scaled_duration'] = cases_pd['duration'] * 50
+    unique_elevations = cases_pd['elevation'].unique()
+
+    for elevation in unique_elevations:
+        # 过滤出当前 elevation 的数据
+        df_elev = cases_pd[cases_pd['elevation'] == elevation]
+        fig, ax = plt.subplots(figsize=(10, 6), dpi=600)
+        # 字体设置
+        plt.rcParams['font.sans-serif'] = ['SimHei', 'FangSong', 'STSong', 'Arial Unicode MS', 'Microsoft YaHei',
+                                           'Heiti TC', 'WenQuanYi Zen Hei']
+        plt.rcParams['axes.unicode_minus'] = False
+        df_elev.plot(
+            kind='scatter',
+            x='q2-flow_rate',
+            y='q1-q3',
+            s='scaled_duration',  # s参数现在指向 scaled_duration 列
+            ax=ax,
+            alpha=0.7,  # 设置透明度，以防点重叠
+            title=f'elevation = {elevation}'  # 设置图表标题
+        )
+        plt.xlabel('q2')
+        plt.ylabel('q1-q3')
+        plt.tight_layout()
+        plt.savefig(os.path.join(file, f'{cases_type}_elevation-{elevation}_.png'), dpi=600)
+        plt.close(fig)
