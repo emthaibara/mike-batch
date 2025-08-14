@@ -27,7 +27,7 @@ def start_simulation(cases=None,
     cpu_core_count = os.cpu_count()
     rd = redis.Redis(host=rd_host, port=rd_port, decode_responses=True)
     try:
-        Parallel(n_jobs=cpu_core_count / 2, backend="loky")(
+        Parallel(n_jobs=cpu_core_count, backend="loky")(
             delayed(worker)(task_id, cases, rd)
             for task_id in pending_tasks
         )
@@ -49,8 +49,6 @@ def worker(task_id, cases, rd: redis.Redis):
     work(task_id, cases[task_id], rd)
     """ 更新状态为已完成✅ """
     rd.hset(KEY, str(task_id), str(StatusEnum.completed.value))
-    rd.close()
-
 
 def work(task_id, case, rd: redis.Redis):
     init_logging()
