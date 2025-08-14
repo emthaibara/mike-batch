@@ -1,2 +1,2 @@
-rd_host = '192.168.31.253'
+rd_host = 'localhost'
 rd_port = 6379

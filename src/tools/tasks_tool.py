@@ -83,7 +83,7 @@ def __init_tasks_cache():
         pipe.hset(KEY, str(task_id), str(StatusEnum.not_started.value))
     pipe.execute()
 
-def fresh_cash_tasks():
+def fresh_cache_tasks():
     cached_tasks = __rd.hgetall(KEY)
     pipe = __rd.pipeline()
     for task in cached_tasks.items():
