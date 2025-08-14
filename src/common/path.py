@@ -15,3 +15,4 @@ logs_path = os.path.join(work_space_path, 'logs')
 origin_m21fm_path = os.path.join(required_path, 'LHKHX.m21fm')
 dfsu_path = os.path.join(required_path, 'Manning.dfsu')
 mesh_path = os.path.join(required_path, 'LHKHX.mesh')
+FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngineHD.exe'

@@ -6,13 +6,10 @@ import time
 import os
 
 from src.aspect import init_picologging, check
-from src.common import assets_path
 from src.common import assets_path, generate_electricity, pump, do_nothing
 from src.script import start_timing_job, gen_cases_json
 from src.script.custom import gen_q1_q3_dfs0, gen_q2_dfs0, gen_m21fm
 from src.script.simulation import start_simulation
-from src.script.statistics_cases import statistics_cases, scatter_plot
-
 
 def _run_one_case_simulation(elevation,
                              q1_flow_rate,
@@ -60,21 +57,19 @@ def _run_one_case_simulation(elevation,
         print(e)
 
 @init_picologging
+def run_gen_cases():
+    gen_cases_json()
+    # statistics_cases()
+    
+@init_picologging
 @check
 def main():
-    """" 定时同步所有任务状态（每隔10s写入一次tasks.json） """
+    """ 定时同步所有任务状态（每隔10s写入一次tasks.json） """
     stop_event = threading.Event()
     thread = threading.Thread(target=start_timing_job,args=(stop_event,))
     thread.start()
     """ 开始批量模拟（内容填充前置处理AOP独立出去了，这里传入空列表就行） """
     start_simulation([],[],stop_event=stop_event)
 
-@init_picologging
-def run_gen_cases():
-    gen_cases_json()
-    # statistics_cases()
 if __name__ == '__main__':
-    # scatter_plot(os.path.join(assets_path,'limit_time'))
-    # scatter_plot(os.path.join(assets_path,'not_limit'))
-    # run_gen_cases()
-    _run_one_case_simulation()
+    main()

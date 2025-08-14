@@ -24,4 +24,5 @@ __all__ = ['assets_path',
            'rd_host',
            'rd_port',
            'dfsu_path',
-           'mesh_path']
+           'mesh_path',
+           'FemEngine_location']

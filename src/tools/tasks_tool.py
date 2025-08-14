@@ -82,3 +82,11 @@ def __init_tasks_cache():
                         desc='batch write using pipeline to caching tasks'):
         pipe.hset(KEY, str(task_id), str(StatusEnum.not_started.value))
     pipe.execute()
+
+def fresh_cash_tasks():
+    cached_tasks = __rd.hgetall(KEY)
+    pipe = __rd.pipeline()
+    for task in cached_tasks.items():
+        if task[1] == StatusEnum.in_process.value:
+            pipe.hset(KEY, task[0], str(StatusEnum.not_started.value))
+    pipe.execute()

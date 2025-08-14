@@ -4,18 +4,17 @@ import shutil
 import subprocess
 import threading
 import time
-from datetime import datetime
 import picologging
 from apscheduler.jobstores import redis
 from colorama import Fore
 from joblib import Parallel, delayed
 from src.aspect import log_name, init_logging
 from src.aspect.simulation_aspect import load_and_persistence
-from src.common import simulation_path, rd_host, rd_port, mesh_path, dfsu_path
+from src.common import simulation_path, rd_host, rd_port, mesh_path, dfsu_path, FemEngine_location
 from src.enums import StatusEnum
 from src.script import q1_key, q2_key, q3_key
 from src.script.custom import gen_q1_q3_dfs0, gen_q2_dfs0, gen_m21fm
-from src.tools import persistence, KEY
+from src.tools import persistence, KEY, fresh_cash_tasks
 
 __logger = picologging.getLogger(log_name)
 @load_and_persistence
@@ -24,22 +23,23 @@ def start_simulation(cases=None,
                      stop_event : threading.Event=None):
     """ 启动进程池,读取当前主机的cpu核心数量,根据核心数量确定进程池的最大并发进程量 """
     cpu_core_count = os.cpu_count()
+    rd = redis.Redis(host=rd_host, port=rd_port, decode_responses=True)
     try:
-        Parallel(n_jobs=cpu_core_count, backend="loky")(
-            delayed(worker)(task_id, cases)
+        Parallel(n_jobs=cpu_core_count / 2, backend="loky")(
+            delayed(worker)(task_id, cases, rd)
             for task_id in pending_tasks
         )
     except KeyboardInterrupt as e:
         stop_event.set()
         __logger.info('意外退出，正在保存任务进度......')
+        fresh_cash_tasks()
         persistence()
         __logger.info('任务进度保存成功')
         __logger.error(e)
     finally:
         persistence()
 
-def worker(task_id, cases):
-    rd = redis.Redis(host=rd_host, port=rd_port, decode_responses=True)
+def worker(task_id, cases, rd : redis.Redis):
     """ 更新状态为任务进行中⏳"""
     rd.hset(KEY, str(task_id), str(StatusEnum.in_process.value))
     """ simulation """
@@ -77,9 +77,12 @@ def work(case):
     # 起始时间
     start_time = time.time()
     logger.info(Fore.MAGENTA +f'⏳该工况水动力模拟正在进行--->【{case['type']}】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate},步长={number_of_time_steps}】,path={path}  processing......')
-    _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngineHD.exe'
-    subprocess.run([_FemEngine_location, m21fm_path, '/run'],
-                   capture_output=False, text=True, check=True)
+    try:
+        subprocess.run([FemEngine_location, m21fm_path, '/run'],
+                       capture_output=False, text=True, check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f'⚠️模拟任务失败: {e}')
+        raise e
     # 结束时间
     end_time = time.time()
     # 耗时
