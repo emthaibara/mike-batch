@@ -1,4 +1,5 @@
 import math
+import multiprocessing
 import os
 import shutil
 import subprocess
@@ -22,13 +23,12 @@ __logger = picologging.getLogger(log_name)
 @load_and_persistence
 def start_simulation(cases=None,
                      pending_tasks=None,
-                     stop_event: threading.Event = None):
+                     stop_event=None):
     """ 启动进程池,读取当前主机的cpu核心数量,根据核心数量确定进程池的最大并发进程量 """
     cpu_core_count = os.cpu_count()
-    rd = redis.Redis(host=rd_host, port=rd_port, decode_responses=True)
     try:
-        Parallel(n_jobs=cpu_core_count, backend="loky")(
-            delayed(worker)(task_id, cases, rd)
+        Parallel(n_jobs=cpu_core_count / 2, backend="loky")(
+            delayed(worker)(task_id, cases)
             for task_id in pending_tasks
         )
     except KeyboardInterrupt as e:
@@ -41,14 +41,15 @@ def start_simulation(cases=None,
     finally:
         persistence()
 
-
-def worker(task_id, cases, rd: redis.Redis):
+def worker(task_id, cases):
+    rd = redis.Redis(host=rd_host, port=rd_port, decode_responses=True)
     """ 更新状态为任务进行中⏳"""
     rd.hset(KEY, str(task_id), str(StatusEnum.in_process.value))
     """ simulation """
     work(task_id, cases[task_id], rd)
     """ 更新状态为已完成✅ """
     rd.hset(KEY, str(task_id), str(StatusEnum.completed.value))
+    rd.close()
 
 def work(task_id, case, rd: redis.Redis):
     init_logging()
@@ -98,4 +99,5 @@ def work(task_id, case, rd: redis.Redis):
     except subprocess.CalledProcessError as e:
         logger.error(f'⚠️模拟任务失败: {e}')
         rd.hset(KEY, str(task_id), str(StatusEnum.error.value))
+        rd.close()
         raise e

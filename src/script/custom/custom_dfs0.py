@@ -20,23 +20,24 @@ def gen_q1_q3_dfs0(number_of_time_steps : int,
              flow_rate: float,
              dfs0_type: str,     # 'Qlhk'---q1 'Qyg'----q3
              write_path) -> None:
+    symbol = -1 if dfs0_type == 'Qyg' else 1
     """ 预热阶段一 10min 偏移量固定=100/60=1.68 """
     number_of_stage_one_preheat_time_steps = 60
     stage_one_offest = round(100 / number_of_stage_one_preheat_time_steps,2)
     stage_one_data = np.full((number_of_stage_one_preheat_time_steps,),
-                             [ stage_one_offest * i for i in range(number_of_stage_one_preheat_time_steps) ])
+                             [ (symbol*stage_one_offest) * i for i in range(number_of_stage_one_preheat_time_steps) ])
     # print('预热阶段一:',stage_one_data,'0-10min步长为：',stage_one_data.__len__())
 
     """ 预热阶段二 10min """
     number_of_stage_two_preheat_time_steps = 60
-    stage_two_data = np.full((number_of_stage_two_preheat_time_steps,),100)
+    stage_two_data = np.full((number_of_stage_two_preheat_time_steps,), symbol*100)
     # print('预热阶段二 :',stage_two_data,'10min-20min步长为：',stage_two_data.__len__())
 
     """ 预热阶段三 q1小流量=10min  q1大流量=15min """
     number_of_stage_three_preheat_time_steps = int(((10 if flow_rate < __dividing else 25) * 60) / __time_step_seconds)
-    stage_three_offest = round((flow_rate - 100) / number_of_stage_three_preheat_time_steps,2)
+    stage_three_offest = round((flow_rate - (symbol*100)) / number_of_stage_three_preheat_time_steps,2)
     stage_three_data = np.full((number_of_stage_three_preheat_time_steps,),
-                               [ 100 + stage_three_offest * (i+1) for i in range(number_of_stage_three_preheat_time_steps) ])
+                               [ (symbol*100) + (stage_three_offest * (i+1)) for i in range(number_of_stage_three_preheat_time_steps) ])
     # print('预热阶段三:',stage_three_data,'20min-30min步长为：',stage_three_data.__len__())
 
     """ 预热阶段四  q1小流量=15min  q2大流量=20分钟"""
@@ -84,6 +85,23 @@ def gen_q2_dfs0(number_of_time_steps : int,
      )
 
 def __dfs0_convert_to_csv():
-    dsf0_path = os.path.join(assets_path, 'test', 'Qout_LHK.dfs0')
+    """
+        {
+      "cases_id": 42729,
+      "path": "z0-2\\q1-2\\q2-5\\q3-3",
+      "elevation": 2604.5,
+      "q1-flow_rate": 200.0,
+      "q2-flow_rate": -425.0,
+      "q3-flow_rate": 310.0,
+      "duration": 8.5,
+      "number_of_time_steps": 3060,
+      "type": "抽水"
+    },
+    Returns
+    -------
+    """
+    dsf0_path = r'C:\Users\xhF\Desktop\mike-batch\assets\generated\simulation\z0-2\q1-2\q2-5\q3-3\LHKHX.m21fm - Result Files\z.dfs0'
     data = Dfs0(dsf0_path).read()
-    data.to_dataframe().to_csv(os.path.join(assets_path, 'test', 'Qout_LHK_mikeio_convert.csv'), index=True)
+    data.to_dataframe().to_excel(os.path.join(assets_path, 'z0-2_q1-2_q2-5_q3-3.xlsx'), index=True)
+
+

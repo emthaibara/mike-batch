@@ -1,4 +1,5 @@
 import math
+import multiprocessing
 import os.path
 import subprocess
 import threading
@@ -17,7 +18,7 @@ def _run_one_case_simulation(elevation,
                              q3_flow_rate,
                              duration):
     location = os.path.join(assets_path,'test')
-    number_of_time_steps = duration * 360
+    number_of_time_steps = int(duration * 360)
     gen_q1_q3_dfs0(number_of_time_steps,
                    q1_flow_rate,
                    'Qlhk',
@@ -32,29 +33,29 @@ def _run_one_case_simulation(elevation,
     gen_m21fm(elevation,
               number_of_time_steps,
               os.path.join(location,'LHKHX.m21fm'))
-    # 起始时间
-    start_time = time.time()
-    """ invoke FemEngine.exe 开始模拟 """
-    _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngineHD.exe'
-    try:
-        subprocess.run([_FemEngine_location,os.path.join(assets_path,'test','LHKHX.m21fm'), '/run'],
-                       capture_output=True, text=True, check=True)
-        # 耗时
-        elapsed_time = time.time() - start_time
-        # 将总秒数转换为小时、分钟和秒
-        hours = math.floor(elapsed_time / 3600)
-        minutes = math.floor((elapsed_time % 3600) / 60)
-        seconds = elapsed_time % 60
-        # 将时间格式化为字符串
-        elapsed_time_str = f"{int(hours)}小时 {int(minutes)}分钟 {seconds:.2f}秒"
-        _type = {
-            generate_electricity: '发电',
-            pump: '抽水',
-            do_nothing: '不抽不发'
-        }
-        print(f'✅【抽水】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate}】,水动力模拟已完成,该工况模拟耗时【{elapsed_time_str}】')
-    except subprocess.CalledProcessError as e:
-        print(e)
+    # # 起始时间
+    # start_time = time.time()
+    # """ invoke FemEngine.exe 开始模拟 """
+    # _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngineHD.exe'
+    # try:
+    #     subprocess.run([_FemEngine_location,os.path.join(assets_path,'test','LHKHX.m21fm'), '/run'],
+    #                    capture_output=True, text=True, check=True)
+    #     # 耗时
+    #     elapsed_time = time.time() - start_time
+    #     # 将总秒数转换为小时、分钟和秒
+    #     hours = math.floor(elapsed_time / 3600)
+    #     minutes = math.floor((elapsed_time % 3600) / 60)
+    #     seconds = elapsed_time % 60
+    #     # 将时间格式化为字符串
+    #     elapsed_time_str = f"{int(hours)}小时 {int(minutes)}分钟 {seconds:.2f}秒"
+    #     _type = {
+    #         generate_electricity: '发电',
+    #         pump: '抽水',
+    #         do_nothing: '不抽不发'
+    #     }
+    #     print(f'✅【抽水】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate}】,水动力模拟已完成,该工况模拟耗时【{elapsed_time_str}】')
+    # except subprocess.CalledProcessError as e:
+    #     print(e)
 
 @init_picologging
 def run_gen_cases():
@@ -65,11 +66,17 @@ def run_gen_cases():
 @check
 def main():
     """ 定时同步所有任务状态（每隔10s写入一次tasks.json） """
-    stop_event = threading.Event()
+    stop_event = multiprocessing.Event()
     thread = threading.Thread(target=start_timing_job,args=(stop_event,))
     thread.start()
     """ 开始批量模拟（内容填充前置处理AOP独立出去了，这里传入空列表就行） """
     start_simulation([],[],stop_event=stop_event)
 
 if __name__ == '__main__':
-    main()
+    _run_one_case_simulation(
+        elevation=2604.5,
+        q1_flow_rate=200.0,
+        q2_flow_rate=-425.0,
+        q3_flow_rate=-310.0,
+        duration=8.5,
+    )
