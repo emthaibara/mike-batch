@@ -21,7 +21,7 @@ def __do_calculate(q1 : float,
     v0 = get_v0_cases().loc[z0_key].iloc[0] #4881
     __logger.info(f'初始库容dq: {v0}')
     # 净流量v0
-    dq = q1 + q2 - q3 #-300
+    dq = q1 + q2 + q3 #-300
     __logger.info(f'净流量v0: {dq}')
     # 如果等于0，为了代码的统一性，我这里设置成无穷大，因为后面的算式他会做被除数
     if dq == 0:

@@ -18,8 +18,6 @@ from src.script.custom import gen_q1_q3_dfs0, gen_q2_dfs0, gen_m21fm
 from src.tools import persistence, KEY, fresh_cache_tasks
 
 __logger = picologging.getLogger(log_name)
-
-
 @load_and_persistence
 def start_simulation(cases=None,
                      pending_tasks=None,

@@ -2,6 +2,7 @@ from .path import *
 from .file_name import *
 from .case_type import *
 from .rd_client_config import rd_host, rd_port
+from .task_entity import TaskEntity
 __all__ = ['assets_path',
            'work_space_path',
            'script_generated_path',
@@ -25,4 +26,5 @@ __all__ = ['assets_path',
            'rd_port',
            'dfsu_path',
            'mesh_path',
-           'FemEngine_location']
+           'FemEngine_location',
+           'TaskEntity']

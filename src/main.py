@@ -5,7 +5,6 @@ import subprocess
 import threading
 import time
 import os
-
 from src.aspect import init_picologging, check
 from src.common import assets_path, generate_electricity, pump, do_nothing
 from src.script import start_timing_job, gen_cases_json
@@ -34,34 +33,34 @@ def _run_one_case_simulation(elevation,
               number_of_time_steps,
               os.path.join(location,'LHKHX.m21fm'))
     # # 起始时间
-    # start_time = time.time()
-    # """ invoke FemEngine.exe 开始模拟 """
-    # _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngineHD.exe'
-    # try:
-    #     subprocess.run([_FemEngine_location,os.path.join(assets_path,'test','LHKHX.m21fm'), '/run'],
-    #                    capture_output=True, text=True, check=True)
-    #     # 耗时
-    #     elapsed_time = time.time() - start_time
-    #     # 将总秒数转换为小时、分钟和秒
-    #     hours = math.floor(elapsed_time / 3600)
-    #     minutes = math.floor((elapsed_time % 3600) / 60)
-    #     seconds = elapsed_time % 60
-    #     # 将时间格式化为字符串
-    #     elapsed_time_str = f"{int(hours)}小时 {int(minutes)}分钟 {seconds:.2f}秒"
-    #     _type = {
-    #         generate_electricity: '发电',
-    #         pump: '抽水',
-    #         do_nothing: '不抽不发'
-    #     }
-    #     print(f'✅【抽水】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate}】,水动力模拟已完成,该工况模拟耗时【{elapsed_time_str}】')
-    # except subprocess.CalledProcessError as e:
-    #     print(e)
+    start_time = time.time()
+    """ invoke FemEngine.exe 开始模拟 """
+    _FemEngine_location = r'C:\Program Files (x86)\DHI\2014\bin\x64\FemEngineHD.exe'
+    try:
+        subprocess.run([_FemEngine_location,os.path.join(assets_path,'test','LHKHX.m21fm'), '/run'],
+                       capture_output=True, text=True, check=True)
+        # 耗时
+        elapsed_time = time.time() - start_time
+        # 将总秒数转换为小时、分钟和秒
+        hours = math.floor(elapsed_time / 3600)
+        minutes = math.floor((elapsed_time % 3600) / 60)
+        seconds = elapsed_time % 60
+        # 将时间格式化为字符串
+        elapsed_time_str = f"{int(hours)}小时 {int(minutes)}分钟 {seconds:.2f}秒"
+        _type = {
+            generate_electricity: '发电',
+            pump: '抽水',
+            do_nothing: '不抽不发'
+        }
+        print(f'✅【抽水】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate}】,水动力模拟已完成,该工况模拟耗时【{elapsed_time_str}】')
+    except subprocess.CalledProcessError as e:
+        print(e)
 
 @init_picologging
 def run_gen_cases():
     gen_cases_json()
     # statistics_cases()
-    
+
 @init_picologging
 @check
 def main():
@@ -73,10 +72,4 @@ def main():
     start_simulation([],[],stop_event=stop_event)
 
 if __name__ == '__main__':
-    _run_one_case_simulation(
-        elevation=2604.5,
-        q1_flow_rate=200.0,
-        q2_flow_rate=-425.0,
-        q3_flow_rate=-310.0,
-        duration=8.5,
-    )
+    main()

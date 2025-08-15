@@ -44,22 +44,25 @@ def __filter_case(case_type : str,q2_offset,count_offset):
     # json
     combinations = {f'{__type[case_type]}_cases':[]}
     count = 0
-    for cases_id,combo in enumerate(itertools.product(q1_options, q2_options, q3_options, z0_options)):
+    for cases_id,combo in enumerate(itertools.product(z0_options, q1_options, q2_options, q3_options)):
 
-        z0_value = z0_cases.loc[combo[3][0]].iloc[0]
-        q1_value = q1_cases.loc[combo[0][0]].iloc[0]
-        q2_value = q2_cases.loc[combo[1][0]].iloc[0]
-        q3_value = q3_cases.loc[combo[2][0]].iloc[0]
+        z0_value = z0_cases.loc[combo[0][0]].iloc[0]
+        q1_value = q1_cases.loc[combo[1][0]].iloc[0]
+        q2_value = q2_cases.loc[combo[2][0]].iloc[0]
+        q3_value = q3_cases.loc[combo[3][0]].iloc[0]
 
         __logger.info("=======================================================================")
-        __logger.info(f'{case_type}工况={combo[3][0]}/{combo[0][0]}/{combo[1][0]}/{combo[2][0]} 正在计算时长...')
-        duration = calculate_duration(combo[3][0],q1_value,q2_value,q3_value)
+        __logger.info(f'{case_type}工况={combo[0][0]}/{combo[1][0]}/{combo[2][0]}/{combo[3][0]} 正在计算时长...')
+        duration = calculate_duration(combo[0][0],q1_value,q2_value,q3_value)
         if duration <= 0:
             continue
 
         value = {
             'cases_id' : count + count_offset,
-            'path' : os.path.join(combo[3][0],combo[0][0],combo[1][0],combo[2][0]),
+            'path' : os.path.join(f'{combo[0][0]}-[{float(z0_value)}]m',
+                                  f'{combo[1][0]}-[{float(q1_value)}]m^3perS',
+                                  f'{combo[2][0]}-[{float(q2_value)}]m^3perS',
+                                  f'{combo[3][0]}-[{float(q3_value)}]m^3perS'),
             z0_key : float(z0_value),
             q1_key : float(q1_value),
             q2_key : float(q2_value),

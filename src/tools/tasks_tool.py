@@ -2,7 +2,6 @@ import os
 
 import redis
 from orjson import orjson
-from tqdm import tqdm
 from src.common import script_generated_path, rd_host, rd_port
 from src.enums import StatusEnum
 
@@ -27,8 +26,7 @@ def __gen_tasks_json():
     global __tasks
     with open(__tasks_json_path,'wb') as f:
         __tasks[:] = [{'task_id':i,'task_status': StatusEnum.not_started}
-                      for i in tqdm(range(__task_total),
-                                    desc='tasks.json not exist, generating tasks json')]
+                      for i in range(__task_total)]
         f.write(orjson.dumps({KEY:__tasks},option=orjson.OPT_INDENT_2))
 
 # 填充 cases、tasks
@@ -39,22 +37,26 @@ def fill(args):
 
 def persistence(is_return=False):
     cached_tasks = __rd.hgetall(KEY)
+    sorted_items = sorted(cached_tasks.items(), key=lambda item: int(item[0]))
     if is_return:
-        return cached_tasks
+        return sorted_items
     else:
         tasks_json = {KEY:[]}
-        for task in cached_tasks.items():
+        for task in sorted_items:
             tasks_json[KEY].append({'task_id': int(task[0]), 'task_status': task[1]})
         with open(__tasks_json_path,'wb') as f:
             f.write(orjson.dumps(tasks_json,option=orjson.OPT_INDENT_2))
             return None
 
-# 任务筛选，如果该任务状态未完成则
+# 任务筛选，如果该任务状态未完成则进入就绪状态
 def __filter_tasks():
     pending_tasks = []
+    pipe = __rd.pipeline()
     for task in __tasks:
         if task['task_status'] != StatusEnum.completed.value:
+            __rd.hset(KEY, task['task_id'], StatusEnum.pending.value)
             pending_tasks.append(task['task_id'])
+    pipe.execute()
     return pending_tasks
 
 def __check():
@@ -76,10 +78,8 @@ def __check_tasks_cache():
         __init_tasks_cache()
 
 def __init_tasks_cache():
-    # 由于任务数量较多，可以用redis的管道来减少io次数，io实际上只发生一次，类似打包
     pipe = __rd.pipeline()
-    for task_id in tqdm(range(__task_total),
-                        desc='batch write using pipeline to caching tasks'):
+    for task_id in range(__task_total):
         pipe.hset(KEY, str(task_id), str(StatusEnum.not_started.value))
     pipe.execute()
 
