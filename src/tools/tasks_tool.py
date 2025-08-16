@@ -5,11 +5,11 @@ from src.enums import StatusEnum
 
 __tasks_json_path = os.path.join(script_generated_path,'tasks.json')
 # TODO: 视情况而定
-__cases_json_path = os.path.join(script_generated_path,'gen_cases.json')
+__cases_json_path = os.path.join(script_generated_path,'pump_cases.json')
 KEY = 'tasks'
 def __load_cases():
     # TODO: 视情况而定
-    return orjson.loads(open(__cases_json_path, 'rb').read())['gen_cases']
+    return orjson.loads(open(__cases_json_path, 'rb').read())['pump_cases']
 
 def __load_tasks():
     return orjson.loads(open(__tasks_json_path, 'rb').read())[KEY]

@@ -8,7 +8,7 @@ pump_cases_json_path = os.path.join(script_generated_path, 'pump_cases.json')
 generate_electricity_cases_json_path = os.path.join(script_generated_path, 'gen_cases.json')
 do_nothing_cases_json_path = os.path.join(script_generated_path, 'do_nothing_cases.json')
 # TODO: 根据当前要跑的任务类型定
-simulation_path = os.path.join(script_generated_path, 'gen-simulation')
+simulation_path = os.path.join(script_generated_path, 'pump-simulation')
 required_path = os.path.join(assets_path, 'required')
 z0_cases_path = os.path.join(work_space_path, 'assets', 'required', 'z0_cases.csv')
 v0_cases_path = os.path.join(work_space_path, 'assets', 'required', 'v0_cases.csv')
