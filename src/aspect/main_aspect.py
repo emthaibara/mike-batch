@@ -4,7 +4,8 @@ import aspectlib
 import picologging
 from aspectlib import Aspect
 from src.aspect import log_name
-from src.common import script_generated_path, cases_json_path, simulation_path, pump_cases_json_path
+from src.common import script_generated_path, cases_json_path, simulation_path, pump_cases_json_path, \
+    do_nothing_cases_json_path
 from src.script import gen_cases_json
 from src.script.gen_case_folder import gen_case_folder
 

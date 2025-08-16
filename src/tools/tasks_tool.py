@@ -1,15 +1,14 @@
 import os
 from orjson import orjson
-from src.common import script_generated_path
+from src.common import script_generated_path, pump_cases_json_path
 from src.enums import StatusEnum
 
 __tasks_json_path = os.path.join(script_generated_path,'tasks.json')
 # TODO: 视情况而定
-__cases_json_path = os.path.join(script_generated_path,'pump_cases.json')
 KEY = 'tasks'
 def __load_cases():
     # TODO: 视情况而定
-    return orjson.loads(open(__cases_json_path, 'rb').read())['pump_cases']
+    return orjson.loads(open(pump_cases_json_path, 'rb').read())['pump_cases']
 
 def __load_tasks():
     return orjson.loads(open(__tasks_json_path, 'rb').read())[KEY]
@@ -23,7 +22,7 @@ def __gen_tasks_json(cases):
         return tasks
 
 # 填充 cases、tasks
-def fill(cases : list,
+def fill(cases : dict,
          pending_tasks : list,
          cache_tasks : dict):
     __check(cases, pending_tasks, cache_tasks)
@@ -36,16 +35,21 @@ def persistence(cache_tasks : dict):
     with open(__tasks_json_path,'wb') as f:
         f.write(orjson.dumps({KEY:tasks}, option=orjson.OPT_INDENT_2))
 
-def __check(cases : list, pending_tasks : list, cache_tasks : dict):
+def __check(cases : dict,
+            pending_tasks : list,
+            cache_tasks : dict):
     temp_tasks = list()
     # check cases and load
-    if not os.path.exists(__cases_json_path):
-        raise FileNotFoundError(__cases_json_path)
+    if not os.path.exists(pump_cases_json_path):
+        raise FileNotFoundError(pump_cases_json_path)
     else:
-        cases[:] = __load_cases()
+        temp_cases = __load_cases()
+        for case in temp_cases:
+            cases[case['case_id']] = case
+
     # check tasks and load （要检查cache和json两个位置）
     if not os.path.exists(__tasks_json_path):
-        temp_tasks[:] = __gen_tasks_json(cases)
+        temp_tasks[:] = __gen_tasks_json(temp_cases)
 
     temp_tasks[:] = __load_tasks()
 
