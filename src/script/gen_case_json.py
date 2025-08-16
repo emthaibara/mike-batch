@@ -60,7 +60,7 @@ def __filter_case(case_type : str,
             continue
 
         value = {
-            'cases_id' : count + count_offset,
+            'case_id' : count + count_offset,
             'path' : os.path.join(f'{combo[0][0]}-[{float(z0_value)}]m',
                                   f'{combo[1][0]}-[{float(q1_value)}]m^3perS',
                                   f'{combo[2][0]}-[{float(q2_value)}]m^3perS',
