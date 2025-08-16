@@ -30,7 +30,7 @@ def check(*args, **kwargs):
         """" 根据工况表批量生成工况目录 """
         __logger.info('所有工况对应的目录层级不存在,正在生成中⏳')
         # TODO: 视情况而定
-        gen_case_folder(pump_cases_json_path,simulation_path,max_workers=12)
+        gen_case_folder(generate_electricity_cases_json_path,simulation_path,max_workers=12)
         __logger.info('所有工况对应的目录层级生成成功✅')
     else:
         __logger.info('所有工况对应的目录层级已存在✅')

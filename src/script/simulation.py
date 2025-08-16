@@ -14,7 +14,7 @@ from src.tools import persistence, fill
 __logger = picologging.getLogger(log_name)
 pending_tasks = list()
 cache_tasks = dict()
-cases = [dict()]
+cases = dict()
 def start_simulation():
     fill(cases, pending_tasks, cache_tasks)
     try:
