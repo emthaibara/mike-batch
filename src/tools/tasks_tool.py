@@ -14,10 +14,11 @@ def __load_cases():
 def __load_tasks():
     return orjson.loads(open(__tasks_json_path, 'rb').read())[KEY]
 
-def __gen_tasks_json(task_total):
+def __gen_tasks_json(cases):
     with open(__tasks_json_path,'wb') as f:
-        tasks = [{'task_id':i,'task_status': StatusEnum.not_started}
-                      for i in range(task_total)]
+        tasks = [{'task_id':case['case_id'],
+                  'task_status': StatusEnum.not_started}
+                      for case in cases]
         f.write(orjson.dumps({KEY:tasks},option=orjson.OPT_INDENT_2))
         return tasks
 
@@ -44,7 +45,7 @@ def __check(cases : list, pending_tasks : list, cache_tasks : dict):
         cases[:] = __load_cases()
     # check tasks and load （要检查cache和json两个位置）
     if not os.path.exists(__tasks_json_path):
-        temp_tasks[:] = __gen_tasks_json(cases.__len__())
+        temp_tasks[:] = __gen_tasks_json(cases)
 
     temp_tasks[:] = __load_tasks()
 
