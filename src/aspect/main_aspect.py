@@ -5,7 +5,7 @@ import picologging
 from aspectlib import Aspect
 from src.aspect import log_name
 from src.common import script_generated_path, cases_json_path, simulation_path, generate_electricity_cases_json_path, \
-    pump_cases_json_path
+    pump_cases_json_path, do_nothing_cases_json_path
 from src.script import gen_cases_json
 from src.script.gen_case_folder import gen_case_folder
 
@@ -30,7 +30,7 @@ def check(*args, **kwargs):
         """" 根据工况表批量生成工况目录 """
         __logger.info('所有工况对应的目录层级不存在,正在生成中⏳')
         # TODO: 视情况而定
-        gen_case_folder(generate_electricity_cases_json_path,simulation_path,max_workers=12)
+        gen_case_folder(do_nothing_cases_json_path,simulation_path,max_workers=12)
         __logger.info('所有工况对应的目录层级生成成功✅')
     else:
         __logger.info('所有工况对应的目录层级已存在✅')

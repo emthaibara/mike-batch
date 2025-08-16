@@ -1,6 +1,6 @@
 import os
 from orjson import orjson
-from src.common import script_generated_path, generate_electricity_cases_json_path
+from src.common import script_generated_path, do_nothing_cases_json_path
 from src.enums import StatusEnum
 
 __tasks_json_path = os.path.join(script_generated_path,'tasks.json')
@@ -8,7 +8,7 @@ __tasks_json_path = os.path.join(script_generated_path,'tasks.json')
 KEY = 'tasks'
 def __load_cases():
     # TODO: 视情况而定
-    return orjson.loads(open(generate_electricity_cases_json_path, 'rb').read())['gen_cases']
+    return orjson.loads(open(do_nothing_cases_json_path, 'rb').read())['do_nothing_cases']
 
 def __load_tasks():
     return orjson.loads(open(__tasks_json_path, 'rb').read())[KEY]
@@ -39,8 +39,8 @@ def __check(cases : dict,
             cache_tasks : dict):
     temp_tasks = list()
     # check cases and load
-    if not os.path.exists(generate_electricity_cases_json_path):
-        raise FileNotFoundError(generate_electricity_cases_json_path)
+    if not os.path.exists(do_nothing_cases_json_path):
+        raise FileNotFoundError(do_nothing_cases_json_path)
     else:
         temp_cases = __load_cases()
         for case in temp_cases:

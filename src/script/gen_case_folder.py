@@ -29,7 +29,7 @@ def gen_case_folder(json_file_path, base_path, max_workers=8):
         futures = []
         __logger.info(f"开始创建工况目录层级.....")
         # TODO: 视情况而定
-        for case in data['gen_cases']:
+        for case in data['do_nothing_cases']:
             futures.append(executor.submit(__create_one_case, case, base_path))
         for f in tqdm(as_completed(futures), total=len(futures), desc="并发创建工况目录层级中"):
             result = f.result()
