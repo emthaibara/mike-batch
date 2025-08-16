@@ -5,6 +5,5 @@ class StatusEnum(Enum):
     error = '任务执行异常'
     in_process  = '模拟进行中'
     not_started  = '未开始'
-    pending = '就绪队列中'
 
 

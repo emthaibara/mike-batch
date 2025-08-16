@@ -28,7 +28,8 @@ def gen_case_folder(json_file_path, base_path, max_workers=8):
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         __logger.info(f"开始创建工况目录层级.....")
-        for case in data['cases']:
+        # TODO: 视情况而定
+        for case in data['pump_cases']:
             futures.append(executor.submit(__create_one_case, case, base_path))
         for f in tqdm(as_completed(futures), total=len(futures), desc="并发创建工况目录层级中"):
             result = f.result()

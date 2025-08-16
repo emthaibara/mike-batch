@@ -19,7 +19,9 @@ q1_key = f'q1-flow_rate'
 q2_key = f'q2-flow_rate'
 q3_key = f'q3-flow_rate'
 # gen、pump、do_nothing
-def __filter_case(case_type : str,q2_offset,count_offset):
+def __filter_case(case_type : str,
+                  q2_offset,
+                  count_offset):
     # 根据类型构建路径
     basic_location = os.path.join(required_path, __type[case_type])
     q1_cases_path = os.path.join(basic_location, q1_cases_file_name)
@@ -83,17 +85,20 @@ def __filter_case(case_type : str,q2_offset,count_offset):
 
 def gen_cases_json():
     __cases = []
-    __do_nothing_cases = __filter_case(do_nothing, 13, 0)
-    __generate_electricity_cases = __filter_case(generate_electricity, 14, __do_nothing_cases.__len__())
-    __pump_cases = __filter_case(pump, 1, __do_nothing_cases.__len__()+__generate_electricity_cases.__len__())
 
+    __pump_cases = __filter_case(pump, 1, 0)
+    __do_nothing_cases = __filter_case(do_nothing, 13, __pump_cases.__len__())
+    __generate_electricity_cases = __filter_case(generate_electricity, 14, __do_nothing_cases.__len__() + __pump_cases.__len__())
+
+
+    __logger.info(f"成功筛选有效[{f'{pump}_cases'}]工况共{__pump_cases.__len__()}种")
     __logger.info( f"成功筛选有效[{f'{do_nothing}_cases'}]工况共{__do_nothing_cases.__len__()}种")
     __logger.info(f"成功筛选有效[{f'{generate_electricity}_cases'}]工况共{__generate_electricity_cases.__len__()}种")
-    __logger.info(f"成功筛选有效[{f'{pump}_cases'}]工况共{__pump_cases.__len__()}种")
 
+    __cases.extend(__pump_cases)
     __cases.extend(__do_nothing_cases)
     __cases.extend(__generate_electricity_cases)
-    __cases.extend(__pump_cases)
+
     __logger.info(f"总的有效工况共{__cases.__len__()}种")
     __cases_json = {'cases' :  __cases}
     try:

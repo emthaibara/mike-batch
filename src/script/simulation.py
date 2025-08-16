@@ -1,57 +1,83 @@
 import math
-import multiprocessing
 import os
 import shutil
 import subprocess
-import threading
 import time
 import picologging
-from apscheduler.jobstores import redis
-from colorama import Fore
-from joblib import Parallel, delayed
-from src.aspect import log_name, init_logging
-from src.aspect.simulation_aspect import load_and_persistence
-from src.common import simulation_path, rd_host, rd_port, mesh_path, dfsu_path, FemEngine_location
+from src.aspect import log_name
+from src.common import simulation_path, mesh_path, dfsu_path, FemEngine_location
 from src.enums import StatusEnum
 from src.script import q1_key, q2_key, q3_key
 from src.script.custom import gen_q1_q3_dfs0, gen_q2_dfs0, gen_m21fm
-from src.tools import persistence, KEY, fresh_cache_tasks
+from src.tools import persistence, fill
 
 __logger = picologging.getLogger(log_name)
-@load_and_persistence
-def start_simulation(cases=None,
-                     pending_tasks=None,
-                     stop_event=None):
-    """ 启动进程池,读取当前主机的cpu核心数量,根据核心数量确定进程池的最大并发进程量 """
-    cpu_core_count = os.cpu_count()
+pending_tasks = list()
+cache_tasks = dict()
+cases = [dict()]
+def start_simulation():
+    fill(cases, pending_tasks, cache_tasks)
     try:
-        Parallel(n_jobs=cpu_core_count / 2, backend="loky")(
-            delayed(worker)(task_id, cases)
-            for task_id in pending_tasks
-        )
+
+        start_time = time.time()
+        for task_id in pending_tasks:
+            __work(task_id)
+            __logger.info(f'🏳️‍🌈批量模拟已运行【{__get_elapsed_time_str(start_time)}】')
+
     except KeyboardInterrupt as e:
-        stop_event.set()
-        __logger.info('意外退出，正在保存任务进度......')
-        fresh_cache_tasks()
-        persistence()
+        __logger.info('⚠️意外退出，正在保存任务进度......')
+        persistence(cache_tasks)
+        __logger.info('任务进度保存成功')
+        __logger.error(e)
+    except subprocess.CalledProcessError as e:
+        __logger.info('⚠️当前正在执行的任务异常，正在保存任务进度后退出......')
+        persistence(cache_tasks)
         __logger.info('任务进度保存成功')
         __logger.error(e)
     finally:
-        persistence()
+        persistence(cache_tasks)
 
-def worker(task_id, cases):
-    rd = redis.Redis(host=rd_host, port=rd_port, decode_responses=True)
-    """ 更新状态为任务进行中⏳"""
-    rd.hset(KEY, str(task_id), str(StatusEnum.in_process.value))
-    """ simulation """
-    work(task_id, cases[task_id], rd)
-    """ 更新状态为已完成✅ """
-    rd.hset(KEY, str(task_id), str(StatusEnum.completed.value))
-    rd.close()
+def __work(task_id):
+    """ 任务状态修改=进行中 """
+    cache_tasks[task_id] = StatusEnum.in_process
+    __worker(task_id)
+    """ 任务状态修改=已完成 """
+    cache_tasks[task_id] = StatusEnum.completed
+    """ 更新任务状态至tasks.json """
+    persistence(cache_tasks)
 
-def work(task_id, case, rd: redis.Redis):
-    init_logging()
-    logger = picologging.getLogger(log_name)
+def __worker(task_id):
+    case = cases[task_id]
+    """ 准备好必要的输入文件 """
+    m21fm_path = __prepare_required_file(case)
+    """ invoke FemEngine.exe 开始模拟（阻塞） """
+    try:
+        # 起始时间
+        start_time = time.time()
+        __logger.info(
+            f'🚀该工况水动力模拟正在进行--->'
+            f'编号ID：【{task_id}】,'
+            f'描述信息：【{case['type']}】工况【z0={case['elevation']},q1={case[q1_key]},q2={case[q2_key]},q3={case[q3_key]},步长={case['number_of_time_steps']}】,'
+            f'路径：{case['path']}  '
+            f'processing......')
+
+        subprocess.run([FemEngine_location, m21fm_path, '/run'],
+                       capture_output=False, text=True, check=True)
+        elapsed_time = __get_elapsed_time_str(start_time)
+
+        __logger.info(
+            f'✅该工况水动力模拟已完成--->'
+            f'编号ID：【{task_id}】,'
+            f'描述信息：【{case['type']}】工况【z0={case['elevation']},q1={case[q1_key]},q2={case[q2_key]},q3={case[q3_key]},步长={case['number_of_time_steps']}】,'
+            f'路径：【{case['path']}】 '
+            f'该工况模拟耗时：【{elapsed_time}】')
+
+    except subprocess.CalledProcessError as e:
+        cache_tasks[task_id] = StatusEnum.error
+        __logger.error(f'⚠️模拟任务失败: {e}')
+        raise e
+
+def __prepare_required_file(case):
     """ 从case中获取信息：水位值（m21fm需要修改的高程值）、q1、q2、q3的目标流量、时间步长"""
     path = case['path']
     location = os.path.join(simulation_path, path)
@@ -74,28 +100,16 @@ def work(task_id, case, rd: redis.Redis):
     shutil.copy(str(dfsu_path), os.path.join(str(simulation_path), str(path), 'Manning.dfsu'))
     shutil.copy(str(mesh_path), os.path.join(str(simulation_path), str(path), 'LHKHX.mesh'))
 
-    """ invoke FemEngine.exe 开始模拟（阻塞） """
-    try:
-        # 起始时间
-        start_time = time.time()
-        logger.info(
-            Fore.MAGENTA + f'⏳该工况水动力模拟正在进行--->【{case['type']}】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate},步长={number_of_time_steps}】,path={path}  processing......')
-        subprocess.run([FemEngine_location, m21fm_path, '/run'],
-                       capture_output=False, text=True, check=True)
-        # 结束时间
-        end_time = time.time()
-        # 耗时
-        elapsed_time = end_time - start_time
-        # 将总秒数转换为小时、分钟和秒
-        hours = math.floor(elapsed_time / 3600)
-        minutes = math.floor((elapsed_time % 3600) / 60)
-        seconds = elapsed_time % 60
-        # 将时间格式化为字符串
-        elapsed_time_str = f"{int(hours)}小时 {int(minutes)}分钟 {seconds:.2f}秒"
-        logger.info(
-            Fore.MAGENTA + f'✅该工况水动力模拟已完成--->【{case['type']}】工况【z0={elevation},q1={q1_flow_rate},q2={q2_flow_rate},q3={q3_flow_rate},步长={number_of_time_steps}】,path=【{path}】 该工况模拟耗时【{elapsed_time_str}】')
-    except subprocess.CalledProcessError as e:
-        logger.error(f'⚠️模拟任务失败: {e}')
-        rd.hset(KEY, str(task_id), str(StatusEnum.error.value))
-        rd.close()
-        raise e
+    return m21fm_path
+
+def __get_elapsed_time_str(start_time):
+    # 结束时间
+    end_time = time.time()
+    # 耗时
+    elapsed_time = end_time - start_time
+    # 将总秒数转换为小时、分钟和秒
+    hours = math.floor(elapsed_time / 3600)
+    minutes = math.floor((elapsed_time % 3600) / 60)
+    seconds = elapsed_time % 60
+    # 将时间格式化为字符串
+    return f"{int(hours)}小时 {int(minutes)}分钟 {seconds:.2f}秒"

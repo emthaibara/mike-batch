@@ -1,13 +1,10 @@
 import math
-import multiprocessing
 import os.path
 import subprocess
-import threading
 import time
 import os
 from src.aspect import init_picologging, check
 from src.common import assets_path, generate_electricity, pump, do_nothing
-from src.script import start_timing_job, gen_cases_json
 from src.script.custom import gen_q1_q3_dfs0, gen_q2_dfs0, gen_m21fm
 from src.script.simulation import start_simulation
 
@@ -56,20 +53,12 @@ def _run_one_case_simulation(elevation,
     except subprocess.CalledProcessError as e:
         print(e)
 
-@init_picologging
-def run_gen_cases():
-    gen_cases_json()
-    # statistics_cases()
 
 @init_picologging
 @check
 def main():
-    """ 定时同步所有任务状态（每隔10s写入一次tasks.json） """
-    stop_event = multiprocessing.Event()
-    thread = threading.Thread(target=start_timing_job,args=(stop_event,))
-    thread.start()
     """ 开始批量模拟（内容填充前置处理AOP独立出去了，这里传入空列表就行） """
-    start_simulation([],[],stop_event=stop_event)
+    start_simulation()
 
 if __name__ == '__main__':
     main()

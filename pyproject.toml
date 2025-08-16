@@ -5,10 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "apscheduler>=3.11.0",
     "aspectlib>=2.0.0",
     "colorama>=0.4.6",
-    "joblib>=1.5.1",
     "matplotlib>=3.10.3",
     "mikeio>=2.6.0",
     "openpyxl>=3.1.5",
@@ -16,5 +14,4 @@ dependencies = [
     "pandas>=2.3.1",
     "pandas-stubs==2.3.0.250703",
     "picologging>=0.9.3",
-    "redis>=6.3.0",
 ]
