@@ -57,7 +57,7 @@ def __worker(task_id):
         __logger.info(
             f'🚀该工况水动力模拟正在进行--->'
             f'编号ID：【{task_id}】,'
-            f'描述信息：【{case['type']}】工况【z0={case['elevation']},q1={case[q1_key]},q2={case[q2_key]},q3={case[q3_key]},步长={case['number_of_time_steps']}】,'
+            f'描述信息：【{case['type']}】工况【z0={case['elevation']},q1={case[q1_key]},q2={case[q2_key]},q3={case[q3_key]},时长=[{case['duration']}h],步长={case['number_of_time_steps']}】,'
             f'路径：{case['path']}  '
             f'processing......')
 
@@ -67,10 +67,10 @@ def __worker(task_id):
 
         __logger.info(
             f'✅该工况水动力模拟已完成--->'
-            f'编号ID：【{task_id}】,'
-            f'描述信息：【{case['type']}】工况【z0={case['elevation']},q1={case[q1_key]},q2={case[q2_key]},q3={case[q3_key]},步长={case['number_of_time_steps']}】,'
-            f'路径：【{case['path']}】 '
-            f'该工况模拟耗时：【{elapsed_time}】')
+            f'编号ID:【{task_id}】,'
+            f'描述信息:【{case['type']}】工况【z0={case['elevation']},q1={case[q1_key]},q2={case[q2_key]},q3={case[q3_key]},时长=[{case['duration']}h],步长={case['number_of_time_steps']}】,'
+            f'路径:【{case['path']}】 '
+            f'该工况模拟耗时:【{elapsed_time}】')
 
     except subprocess.CalledProcessError as e:
         cache_tasks[task_id] = StatusEnum.error

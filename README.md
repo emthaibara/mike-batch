@@ -5,13 +5,14 @@
 
 ![structure.png](assets/images/structure.png)
 
-# Start
+# Usage
 
 ```shell
   uv sync
 ```
 
+
 # 脚手架与核心库
 
-mikeio + uv + multiprocessing / joblib + orjson 
+mikeio + uv
 
